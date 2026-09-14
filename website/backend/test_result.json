@@ -1,0 +1,1 @@
+{"status":"success","model":"idrid_lesion_unet_exp5","inputSize":[512,512,3],"outputSize":[512,512,4],"classes":[2,3,4],"overlayPath":"C:\\Users\\KIIT\\Downloads\\Eyeabetics\\website\\backend\\test_result.json.png","message":"EYEABETICS retinal lesion analysis complete."}

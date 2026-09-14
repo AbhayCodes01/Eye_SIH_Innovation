@@ -1,0 +1,70 @@
+# ================================
+# Eyeabetics Git Ignore
+# ================================
+
+# Node / React
+node_modules/
+frontend/node_modules/
+website/frontend/node_modules/
+
+# Build output
+dist/
+build/
+frontend/dist/
+website/frontend/dist/
+
+# Environment files
+.env
+.env.*
+!.env.example
+
+# MATLAB generated files
+*.asv
+*.m~
+*.autosave
+*.mex*
+*.pdb
+
+# MATLAB temporary / cache
+slprj/
+*.slxc
+*.bak
+
+# Generated runtime outputs
+website/backend/uploads/*
+results/demo_images/*
+output/*
+reports/generated/*
+
+# Keep folder structure
+!website/backend/uploads/.gitkeep
+!results/demo_images/.gitkeep
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+pnpm-debug.log*
+
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# VS Code
+.vscode/
+
+# Python
+__pycache__/
+*.pyc
+
+# Temporary files
+*.tmp
+*.temp
+.git_backup/
+models/
+results/
+.session/
+slprj/
+output/
+*.autosave
