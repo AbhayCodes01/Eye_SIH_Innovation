@@ -1,0 +1,38 @@
+{
+    "project": "EYEABETICS",
+    "model": "Diabetic Retinopathy Classifier",
+    "champion_experiment": 7,
+    "base_experiment": 6,
+    "architecture": "EfficientNet-B2",
+    "ensemble": "3-fold probability averaging",
+    "fold_checkpoints": [
+        "experiment6_b2_fold1.pth",
+        "experiment6_b2_fold2.pth",
+        "experiment6_b2_fold3.pth"
+    ],
+    "input_shape": [
+        1,
+        3,
+        260,
+        260
+    ],
+    "input_type": "float32",
+    "output_name": "probabilities",
+    "output_shape": [
+        1,
+        5
+    ],
+    "output_type": "float32",
+    "thresholds": [
+        1.0,
+        1.0499999523162842,
+        0.6499999761581421,
+        0.8500000238418579,
+        0.949999988079071
+    ],
+    "heldout_images": 80,
+    "heldout_accuracy": 0.6,
+    "heldout_macro_f1": 0.5277,
+    "heldout_weighted_f1": 0.5839,
+    "threshold_source": "Experiment 7 frozen thresholds"
+}
