@@ -1,4 +1,4 @@
-function web_inference(imagePath,jsonPath)
+function web_inference(imagePath,jsonPath,patientJson)
 
 fprintf('\n');
 fprintf('============================================\n');
@@ -9,7 +9,8 @@ fprintf('============================================\n');
 % PROJECT PATH
 % ============================================================
 
-projectRoot = 'C:\Users\KIIT\Downloads\Eyeabetics';
+% Resolve from this file so the innovation copy is self-contained.
+projectRoot = fileparts(fileparts(fileparts(mfilename('fullpath'))));
 
 addpath(genpath(fullfile(projectRoot,'functions')));
 addpath(genpath(fullfile(projectRoot,'models')));
@@ -31,13 +32,22 @@ end
 
 fprintf('\nRunning complete Eyeabetics pipeline...\n');
 
+patient = struct();
+
+if nargin >= 3 && ~isempty(patientJson)
+    try
+        patient = jsondecode(patientJson);
+    catch
+        warning('Patient context could not be decoded. Continuing without it.');
+    end
+end
+
+hba1c = getNumericField(patient,'hba1c');
+diabetesYears = getNumericField(patient,'diabetesYears');
+systolicBP = getNumericField(patient,'systolicBP');
+
 pipelineResult = predict_dr( ...
-    imagePath, ...
-    [], ...
-    [], ...
-    [], ...
-    [], ...
-    []);
+    imagePath, [], [], hba1c, diabetesYears, systolicBP);
 
 %% ============================================================
 % STRUCTURAL OVERLAY
@@ -204,4 +214,14 @@ fprintf('JSON           : %s\n', ...
 
 fprintf('============================================\n');
 
+end
+
+function value = getNumericField(data,fieldName)
+value = [];
+if isstruct(data) && isfield(data,fieldName) && ~isempty(data.(fieldName))
+    candidate = double(data.(fieldName));
+    if isfinite(candidate)
+        value = candidate;
+    end
+end
 end

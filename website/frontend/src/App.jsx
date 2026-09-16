@@ -1,1251 +1,2393 @@
-import { useState } from 'react'
-import './App.css'
+
+import { useEffect, useMemo, useState } from "react";
+import "./App.css";
+const API = "http://localhost:5000";
+
+
+// ============================================================
+// TRANSLATIONS
+// ============================================================
 
 const translations = {
+
   English: {
-    analysisWorkspace: 'ANALYSIS WORKSPACE',
-    fundusAnalysis: 'Fundus Image Analysis',
-    livePipeline: 'LIVE PIPELINE',
-    uploadTitle: 'Upload fundus image',
-    uploadText: 'JPG or PNG retinal image',
-    chooseImage: 'Choose Image',
-    imageReady: 'IMAGE READY',
-    analyze: 'Analyze Retina →',
-    analyzing: 'Analyzing...',
-    analysisComplete: 'ANALYSIS COMPLETE',
-    retinalResults: 'Retinal Analysis Results',
-    complete: '● COMPLETE',
-    original: 'ORIGINAL FUNDUS',
-    structural: 'STRUCTURAL ANALYSIS',
-    drGrade: 'DR GRADE',
-    confidence: 'CONFIDENCE',
-    riskScore: 'RISK SCORE',
-    vesselArea: 'VESSEL AREA',
-    lesionFindings: 'LESION FINDINGS',
-    recommendation: 'RECOMMENDATION',
-    quality: 'IMAGE QUALITY',
-    model: 'MODEL',
-    status: 'STATUS',
-    analysisDone: 'Analysis Complete',
-    lesionModel: '4-Class U-Net',
-    language: 'Language',
-    noLesions: 'No lesion classes detected',
-    classLabel: 'Lesion Class',
-    pixels: 'pixels',
+    appTitle: "EYEABETICS",
+    appSubtitle: "AI-Assisted Diabetic Retinopathy Screening",
 
+    patientInformation: "Patient Information",
+    patientId: "Patient ID",
+    patientName: "Patient Name",
+    age: "Age",
+    gender: "Gender",
+    phone: "Phone",
+    village: "Village",
+    district: "District",
+
+    createPatient: "Create Patient",
+    patientCreated: "Patient created successfully",
+
+    uploadTitle: "Upload Fundus Image",
+    uploadDescription:
+      "Upload a retinal fundus image for AI-assisted screening.",
+    chooseImage: "Choose Fundus Image",
+    analyzeImage: "Analyze Image",
+    analyzing: "Analyzing...",
+    selectedImage: "Selected Image",
+
+    clinicalSummary: "5-Second Clinical Summary",
+    drGrade: "DR Grade",
+    severity: "Severity",
+    imageQuality: "Image Quality",
+    vesselArea: "Vessel Area",
+    riskScore: "Risk Score",
+    referral: "Referral",
+
+    noDr: "No Diabetic Retinopathy",
+    mild: "Mild",
+    moderate: "Moderate",
+    severe: "Severe",
+    proliferative: "Proliferative",
+
+    routine: "Routine",
+    urgent: "Urgent",
+    review: "Clinical Review",
+
+    patientPassport: "Retina Passport",
+    screeningHistory: "Screening History",
+    screenings: "Screenings",
+    currentScreening: "Current Screening",
+    previousScreening: "Previous Screening",
+    noHistory: "No previous screening available.",
+
+    triageQueue: "Doctor Review Queue",
+    triageDescription:
+      "AI-assisted prioritization of screening cases for clinical review.",
+    viewCase: "View Case",
+    noTriageCases: "No cases currently in the review queue.",
+
+    visualEvidence: "Visual Evidence",
+    originalFundus: "Original Fundus",
+    structuralOverlay: "Structural Analysis",
+
+    aiEvidence: "AI Evidence Summary",
+    evidenceDisclaimer:
+      "Descriptive evidence from the prototype pipeline; not a causal explanation of the neural-network decision.",
+
+    lesionSegmentation: "Lesion Segmentation",
+    vascularStructure: "Vascular Structure",
+    classification: "DR Severity Classification",
+
+    progression: "Retinal Progression",
+    progressionDescription:
+      "Comparison of the patient's current and previous screening records.",
+    previousGrade: "Previous Grade",
+    currentGrade: "Current Grade",
+    gradeChange: "Grade Change",
+    progressionStatus: "Progression Status",
+    progressionPriority: "Priority",
+
+    furtherDetails: "Further Clinical Details",
+    technicalDetails: "Technical Details",
+
+    disclaimerTitle: "Medical Disclaimer",
     disclaimer:
-      'AI-assisted screening prototype. Results should be reviewed by a qualified ophthalmologist.',
+      "Eyeabetics is an AI-assisted research prototype and is not a replacement for professional medical diagnosis. All screening results require appropriate clinical review.",
 
-    footer:
-      'AI-assisted retinal analysis • Research prototype',
+    routineMonitoring:
+      "Routine ophthalmic monitoring recommended.",
+    moderateReferral:
+      "Ophthalmic evaluation recommended.",
+    urgentReferral:
+      "Urgent ophthalmology review recommended.",
 
-    engineReady: 'MATLAB AI Engine Ready',
-
-    retinalIntelligence: 'RETINAL INTELLIGENCE',
-
-    heroTitle1: 'Understand the eye',
-    heroTitle2: 'through AI.',
-
-    heroText:
-      'Upload a fundus image and let the Eyeabetics pipeline analyze diabetic retinopathy, retinal lesion patterns, and vascular structure using trained deep-learning models.',
-
-    aiScreening: 'AI RETINAL SCREENING',
-
-    readyText:
-      'Ready to send through the complete Eyeabetics AI analysis pipeline.',
-
-    loadingDetails:
-      'DR classification, lesion segmentation, vessel segmentation and risk analysis are running.',
-
-    qualityWarning:
-      'The image may not be suitable for reliable analysis.',
-
-    noVisualization: 'No visualization available',
-
-    clinicalReview: 'Clinical review recommended.',
-
-    lowConfidence: 'LOW CONFIDENCE - Human Review Recommended',
-
-    grade0: '0 - No DR',
-    grade1: '1 - Mild',
-    grade2: '2 - Moderate',
-    grade3: '3 - Severe',
-    grade4: '4 - Proliferative',
-
-    urgencyLow: 'Low Risk',
-    urgencyModerate: 'Moderate Risk',
-    urgencyHigh: 'High Risk',
-
-    referralRoutine:
-      'Routine ophthalmic monitoring recommended.',
-
-    referral4Weeks:
-      'Refer within 4 weeks',
-
-    referralUrgent:
-      'Urgent ophthalmology review recommended.',
-
-    errorAnalysis: 'Analysis failed'
+    uploadRequired: "Please select a fundus image first.",
+    patientRequired:
+      "Please enter or create a Patient ID before analysis.",
   },
 
   Hindi: {
-    analysisWorkspace: 'विश्लेषण कार्यक्षेत्र',
-    fundusAnalysis: 'फंडस इमेज विश्लेषण',
-    livePipeline: 'लाइव पाइपलाइन',
-    uploadTitle: 'फंडस इमेज अपलोड करें',
-    uploadText: 'JPG या PNG रेटिनल इमेज',
-    chooseImage: 'इमेज चुनें',
-    imageReady: 'इमेज तैयार',
-    analyze: 'रेटिना का विश्लेषण करें →',
-    analyzing: 'विश्लेषण हो रहा है...',
-    analysisComplete: 'विश्लेषण पूरा',
-    retinalResults: 'रेटिनल विश्लेषण परिणाम',
-    complete: '● पूरा',
-    original: 'मूल फंडस',
-    structural: 'संरचनात्मक विश्लेषण',
-    drGrade: 'DR ग्रेड',
-    confidence: 'विश्वास स्तर',
-    riskScore: 'जोखिम स्कोर',
-    vesselArea: 'रक्त वाहिका क्षेत्र',
-    lesionFindings: 'घाव के परिणाम',
-    recommendation: 'सुझाव',
-    quality: 'इमेज गुणवत्ता',
-    model: 'मॉडल',
-    status: 'स्थिति',
-    analysisDone: 'विश्लेषण पूरा',
-    lesionModel: '4-क्लास U-Net',
-    language: 'भाषा',
-    noLesions: 'कोई घाव क्लास नहीं मिली',
-    classLabel: 'घाव क्लास',
-    pixels: 'पिक्सेल',
+    appTitle: "EYEABETICS",
+    appSubtitle: "AI-सहायित डायबिटिक रेटिनोपैथी स्क्रीनिंग",
 
+    patientInformation: "रोगी की जानकारी",
+    patientId: "रोगी ID",
+    patientName: "रोगी का नाम",
+    age: "आयु",
+    gender: "लिंग",
+    phone: "फोन",
+    village: "गाँव",
+    district: "जिला",
+
+    createPatient: "रोगी बनाएँ",
+    patientCreated: "रोगी सफलतापूर्वक बनाया गया",
+
+    uploadTitle: "फंडस इमेज अपलोड करें",
+    uploadDescription:
+      "AI-सहायित स्क्रीनिंग के लिए रेटिनल फंडस इमेज अपलोड करें।",
+    chooseImage: "फंडस इमेज चुनें",
+    analyzeImage: "इमेज का विश्लेषण करें",
+    analyzing: "विश्लेषण हो रहा है...",
+    selectedImage: "चयनित इमेज",
+
+    clinicalSummary: "5-सेकंड क्लिनिकल सारांश",
+    drGrade: "DR ग्रेड",
+    severity: "गंभीरता",
+    imageQuality: "इमेज गुणवत्ता",
+    vesselArea: "रक्त वाहिका क्षेत्र",
+    riskScore: "जोखिम स्कोर",
+    referral: "रेफरल",
+
+    noDr: "डायबिटिक रेटिनोपैथी नहीं",
+    mild: "हल्का",
+    moderate: "मध्यम",
+    severe: "गंभीर",
+    proliferative: "प्रोलिफेरेटिव",
+
+    routine: "रूटीन",
+    urgent: "तत्काल",
+    review: "क्लिनिकल समीक्षा",
+
+    patientPassport: "रेटिना पासपोर्ट",
+    screeningHistory: "स्क्रीनिंग इतिहास",
+    screenings: "स्क्रीनिंग",
+    currentScreening: "वर्तमान स्क्रीनिंग",
+    previousScreening: "पिछली स्क्रीनिंग",
+    noHistory: "कोई पिछली स्क्रीनिंग उपलब्ध नहीं है।",
+
+    triageQueue: "डॉक्टर समीक्षा कतार",
+    triageDescription:
+      "क्लिनिकल समीक्षा के लिए स्क्रीनिंग मामलों की AI-सहायित प्राथमिकता।",
+    viewCase: "केस देखें",
+    noTriageCases: "वर्तमान में समीक्षा कतार में कोई केस नहीं है।",
+
+    visualEvidence: "दृश्य प्रमाण",
+    originalFundus: "मूल फंडस",
+    structuralOverlay: "संरचनात्मक विश्लेषण",
+
+    aiEvidence: "AI Evidence Summary",
+    evidenceDisclaimer:
+      "यह प्रोटोटाइप पाइपलाइन से प्राप्त वर्णनात्मक प्रमाण है; यह न्यूरल नेटवर्क के निर्णय की कारणात्मक व्याख्या नहीं है।",
+
+    lesionSegmentation: "लेजन सेगमेंटेशन",
+    vascularStructure: "रक्त वाहिका संरचना",
+    classification: "DR गंभीरता वर्गीकरण",
+
+    progression: "रेटिनल प्रगति",
+    progressionDescription:
+      "रोगी के वर्तमान और पिछले स्क्रीनिंग रिकॉर्ड की तुलना।",
+    previousGrade: "पिछला ग्रेड",
+    currentGrade: "वर्तमान ग्रेड",
+    gradeChange: "ग्रेड परिवर्तन",
+    progressionStatus: "प्रगति स्थिति",
+    progressionPriority: "प्राथमिकता",
+
+    furtherDetails: "अतिरिक्त क्लिनिकल विवरण",
+    technicalDetails: "तकनीकी विवरण",
+
+    disclaimerTitle: "चिकित्सीय अस्वीकरण",
     disclaimer:
-      'AI-सहायता प्राप्त स्क्रीनिंग प्रोटोटाइप। परिणामों की समीक्षा योग्य नेत्र विशेषज्ञ द्वारा की जानी चाहिए।',
+      "Eyeabetics एक AI-सहायित रिसर्च प्रोटोटाइप है और पेशेवर चिकित्सा निदान का विकल्प नहीं है।",
 
-    footer:
-      'AI-सहायता प्राप्त रेटिनल विश्लेषण • रिसर्च प्रोटोटाइप',
+    routineMonitoring:
+      "नियमित नेत्र जांच की सिफारिश की जाती है।",
+    moderateReferral:
+      "नेत्र विशेषज्ञ द्वारा मूल्यांकन की सिफारिश की जाती है।",
+    urgentReferral:
+      "तत्काल नेत्र विशेषज्ञ समीक्षा की सिफारिश की जाती है।",
 
-    engineReady: 'MATLAB AI इंजन तैयार',
-
-    retinalIntelligence: 'रेटिनल इंटेलिजेंस',
-
-    heroTitle1: 'AI के माध्यम से',
-    heroTitle2: 'आंख को समझें।',
-
-    heroText:
-      'फंडस इमेज अपलोड करें और Eyeabetics पाइपलाइन को डायबिटिक रेटिनोपैथी, रेटिनल घावों तथा रक्त वाहिकाओं की संरचना का विश्लेषण करने दें।',
-
-    aiScreening: 'AI रेटिनल स्क्रीनिंग',
-
-    readyText:
-      'पूरे Eyeabetics AI विश्लेषण पाइपलाइन के लिए इमेज तैयार है।',
-
-    loadingDetails:
-      'DR वर्गीकरण, घाव विभाजन, रक्त वाहिका विभाजन और जोखिम विश्लेषण चल रहा है।',
-
-    qualityWarning:
-      'यह इमेज विश्वसनीय विश्लेषण के लिए उपयुक्त नहीं हो सकती।',
-
-    noVisualization: 'कोई विज़ुअलाइज़ेशन उपलब्ध नहीं है',
-
-    clinicalReview:
-      'चिकित्सकीय समीक्षा की सलाह दी जाती है।',
-
-    lowConfidence:
-      'कम विश्वास स्तर - मानव विशेषज्ञ द्वारा समीक्षा आवश्यक',
-
-    grade0: '0 - DR नहीं',
-    grade1: '1 - हल्का',
-    grade2: '2 - मध्यम',
-    grade3: '3 - गंभीर',
-    grade4: '4 - प्रोलिफेरेटिव',
-
-    urgencyLow: 'कम जोखिम',
-    urgencyModerate: 'मध्यम जोखिम',
-    urgencyHigh: 'उच्च जोखिम',
-
-    referralRoutine:
-      'नियमित नेत्र जांच की सलाह दी जाती है।',
-
-    referral4Weeks:
-      '4 सप्ताह के भीतर विशेषज्ञ से परामर्श लें',
-
-    referralUrgent:
-      'तत्काल नेत्र विशेषज्ञ समीक्षा की सलाह दी जाती है।',
-
-    errorAnalysis: 'विश्लेषण विफल हुआ'
+    uploadRequired: "कृपया पहले फंडस इमेज चुनें।",
+    patientRequired:
+      "कृपया विश्लेषण से पहले Patient ID दर्ज करें या रोगी बनाएँ।",
   },
 
   Odia: {
-    analysisWorkspace: 'ବିଶ୍ଳେଷଣ କାର୍ଯ୍ୟକ୍ଷେତ୍ର',
-    fundusAnalysis: 'ଫଣ୍ଡସ୍ ଚିତ୍ର ବିଶ୍ଳେଷଣ',
-    livePipeline: 'ଲାଇଭ୍ ପାଇପଲାଇନ୍',
-    uploadTitle: 'ଫଣ୍ଡସ୍ ଚିତ୍ର ଅପଲୋଡ୍ କରନ୍ତୁ',
-    uploadText: 'JPG କିମ୍ବା PNG ରେଟିନାଲ୍ ଚିତ୍ର',
-    chooseImage: 'ଚିତ୍ର ବାଛନ୍ତୁ',
-    imageReady: 'ଚିତ୍ର ପ୍ରସ୍ତୁତ',
-    analyze: 'ରେଟିନା ବିଶ୍ଳେଷଣ କରନ୍ତୁ →',
-    analyzing: 'ବିଶ୍ଳେଷଣ ଚାଲିଛି...',
-    analysisComplete: 'ବିଶ୍ଳେଷଣ ସମ୍ପୂର୍ଣ୍ଣ',
-    retinalResults: 'ରେଟିନାଲ୍ ବିଶ୍ଳେଷଣ ଫଳାଫଳ',
-    complete: '● ସମ୍ପୂର୍ଣ୍ଣ',
-    original: 'ମୂଳ ଫଣ୍ଡସ୍',
-    structural: 'ଗଠନାତ୍ମକ ବିଶ୍ଳେଷଣ',
-    drGrade: 'DR ଗ୍ରେଡ୍',
-    confidence: 'ବିଶ୍ୱାସ ସ୍ତର',
-    riskScore: 'ବିପଦ ସ୍କୋର',
-    vesselArea: 'ରକ୍ତନଳୀ କ୍ଷେତ୍ର',
-    lesionFindings: 'ଲେସନ୍ ଫଳାଫଳ',
-    recommendation: 'ପରାମର୍ଶ',
-    quality: 'ଚିତ୍ର ଗୁଣବତ୍ତା',
-    model: 'ମଡେଲ୍',
-    status: 'ସ୍ଥିତି',
-    analysisDone: 'ବିଶ୍ଳେଷଣ ସମ୍ପୂର୍ଣ୍ଣ',
-    lesionModel: '4-କ୍ଲାସ୍ U-Net',
-    language: 'ଭାଷା',
-    noLesions: 'କୌଣସି ଲେସନ୍ କ୍ଲାସ୍ ଚିହ୍ନଟ ହୋଇନାହିଁ',
-    classLabel: 'ଲେସନ୍ କ୍ଲାସ୍',
-    pixels: 'ପିକ୍ସେଲ୍',
-
+    appTitle: "EYEABETICS",
+    appSubtitle: "AI-ସହାୟିତ ଡାଏବେଟିକ୍ ରେଟିନୋପାଥି ସ୍କ୍ରିନିଂ",
+    patientInformation: "ରୋଗୀ ସୂଚନା",
+    patientId: "ରୋଗୀ ID",
+    patientName: "ରୋଗୀଙ୍କ ନାମ",
+    age: "ବୟସ",
+    gender: "ଲିଙ୍ଗ",
+    phone: "ଫୋନ୍",
+    village: "ଗାଁ",
+    district: "ଜିଲ୍ଲା",
+    createPatient: "ରୋଗୀ ସୃଷ୍ଟି କରନ୍ତୁ",
+    patientCreated: "ରୋଗୀ ସଫଳତାର ସହ ସୃଷ୍ଟି ହୋଇଛି",
+    uploadTitle: "ଫଣ୍ଡସ୍ ଇମେଜ୍ ଅପଲୋଡ୍ କରନ୍ତୁ",
+    uploadDescription:
+      "AI-ସହାୟିତ ସ୍କ୍ରିନିଂ ପାଇଁ ରେଟିନାଲ୍ ଫଣ୍ଡସ୍ ଇମେଜ୍ ଅପଲୋଡ୍ କରନ୍ତୁ।",
+    chooseImage: "ଫଣ୍ଡସ୍ ଇମେଜ୍ ବାଛନ୍ତୁ",
+    analyzeImage: "ଇମେଜ୍ ବିଶ୍ଳେଷଣ କରନ୍ତୁ",
+    analyzing: "ବିଶ୍ଳେଷଣ ଚାଲିଛି...",
+    selectedImage: "ବଛାଯାଇଥିବା ଇମେଜ୍",
+    clinicalSummary: "5-ସେକେଣ୍ଡ୍ କ୍ଲିନିକାଲ୍ ସାରାଂଶ",
+    drGrade: "DR ଗ୍ରେଡ୍",
+    severity: "ଗମ୍ଭୀରତା",
+    imageQuality: "ଇମେଜ୍ ଗୁଣବତ୍ତା",
+    vesselArea: "ରକ୍ତନଳୀ କ୍ଷେତ୍ର",
+    riskScore: "ଜୋଖିମ ସ୍କୋର୍",
+    referral: "ରେଫରାଲ୍",
+    noDr: "ଡାଏବେଟିକ୍ ରେଟିନୋପାଥି ନାହିଁ",
+    mild: "ହାଲୁକା",
+    moderate: "ମଧ୍ୟମ",
+    severe: "ଗମ୍ଭୀର",
+    proliferative: "ପ୍ରୋଲିଫେରେଟିଭ୍",
+    routine: "ରୁଟିନ୍",
+    urgent: "ତୁରନ୍ତ",
+    review: "କ୍ଲିନିକାଲ୍ ସମୀକ୍ଷା",
+    patientPassport: "ରେଟିନା ପାସପୋର୍ଟ",
+    screeningHistory: "ସ୍କ୍ରିନିଂ ଇତିହାସ",
+    screenings: "ସ୍କ୍ରିନିଂ",
+    currentScreening: "ବର୍ତ୍ତମାନ ସ୍କ୍ରିନିଂ",
+    previousScreening: "ପୂର୍ବ ସ୍କ୍ରିନିଂ",
+    noHistory: "କୌଣସି ପୂର୍ବ ସ୍କ୍ରିନିଂ ଉପଲବ୍ଧ ନାହିଁ।",
+    triageQueue: "ଡାକ୍ତର ସମୀକ୍ଷା କ୍ୟୁ",
+    triageDescription:
+      "କ୍ଲିନିକାଲ୍ ସମୀକ୍ଷା ପାଇଁ AI-ସହାୟିତ ସ୍କ୍ରିନିଂ ପ୍ରାଥମିକତା।",
+    viewCase: "କେସ୍ ଦେଖନ୍ତୁ",
+    noTriageCases: "ବର୍ତ୍ତମାନ ସମୀକ୍ଷା କ୍ୟୁରେ କୌଣସି କେସ୍ ନାହିଁ।",
+    visualEvidence: "ଦୃଶ୍ୟ ପ୍ରମାଣ",
+    originalFundus: "ମୂଳ ଫଣ୍ଡସ୍",
+    structuralOverlay: "ସଂରଚନାତ୍ମକ ବିଶ୍ଳେଷଣ",
+    aiEvidence: "AI Evidence Summary",
+    evidenceDisclaimer:
+      "ଏହା ପ୍ରୋଟୋଟାଇପ୍ ପାଇପଲାଇନ୍‌ରୁ ପ୍ରାପ୍ତ ବର୍ଣ୍ଣନାତ୍ମକ ପ୍ରମାଣ; ଏହା ନ୍ୟୁରାଲ୍ ନେଟୱର୍କ ନିଷ୍ପତ୍ତିର କାରଣାତ୍ମକ ବ୍ୟାଖ୍ୟା ନୁହେଁ।",
+    lesionSegmentation: "ଲେଜନ୍ ସେଗମେଣ୍ଟେସନ୍",
+    vascularStructure: "ରକ୍ତନଳୀ ସଂରଚନା",
+    classification: "DR ଗମ୍ଭୀରତା ବର୍ଗୀକରଣ",
+    progression: "ରେଟିନାଲ୍ ପ୍ରଗତି",
+    progressionDescription:
+      "ରୋଗୀଙ୍କ ବର୍ତ୍ତମାନ ଏବଂ ପୂର୍ବ ସ୍କ୍ରିନିଂ ରେକର୍ଡର ତୁଳନା।",
+    previousGrade: "ପୂର୍ବ ଗ୍ରେଡ୍",
+    currentGrade: "ବର୍ତ୍ତମାନ ଗ୍ରେଡ୍",
+    gradeChange: "ଗ୍ରେଡ୍ ପରିବର୍ତ୍ତନ",
+    progressionStatus: "ପ୍ରଗତି ସ୍ଥିତି",
+    progressionPriority: "ପ୍ରାଥମିକତା",
+    furtherDetails: "ଅଧିକ କ୍ଲିନିକାଲ୍ ବିବରଣୀ",
+    technicalDetails: "ଟେକ୍ନିକାଲ୍ ବିବରଣୀ",
+    disclaimerTitle: "ଚିକିତ୍ସା ଅସ୍ୱୀକାରୋକ୍ତି",
     disclaimer:
-      'AI-ସହାୟିତ ସ୍କ୍ରିନିଂ ପ୍ରୋଟୋଟାଇପ୍। ଫଳାଫଳକୁ ଜଣେ ଯୋଗ୍ୟ ଚକ୍ଷୁ ବିଶେଷଜ୍ଞ ସମୀକ୍ଷା କରିବା ଉଚିତ।',
-
-    footer:
-      'AI-ସହାୟିତ ରେଟିନାଲ୍ ବିଶ୍ଳେଷଣ • ଗବେଷଣା ପ୍ରୋଟୋଟାଇପ୍',
-
-    engineReady: 'MATLAB AI ଇଞ୍ଜିନ୍ ପ୍ରସ୍ତୁତ',
-
-    retinalIntelligence: 'ରେଟିନାଲ୍ ଇଣ୍ଟେଲିଜେନ୍ସ',
-
-    heroTitle1: 'AI ମାଧ୍ୟମରେ',
-    heroTitle2: 'ଆଖିକୁ ବୁଝନ୍ତୁ।',
-
-    heroText:
-      'ଫଣ୍ଡସ୍ ଚିତ୍ର ଅପଲୋଡ୍ କରନ୍ତୁ ଏବଂ Eyeabetics ପାଇପଲାଇନ୍ ଦ୍ୱାରା ଡାଏବେଟିକ୍ ରେଟିନୋପାଥି, ରେଟିନାଲ୍ ଲେସନ୍ ଏବଂ ରକ୍ତନଳୀ ଗଠନର ବିଶ୍ଳେଷଣ କରନ୍ତୁ।',
-
-    aiScreening: 'AI ରେଟିନାଲ୍ ସ୍କ୍ରିନିଂ',
-
-    readyText:
-      'ସମ୍ପୂର୍ଣ୍ଣ Eyeabetics AI ବିଶ୍ଳେଷଣ ପାଇପଲାଇନ୍ ପାଇଁ ଚିତ୍ର ପ୍ରସ୍ତୁତ।',
-
-    loadingDetails:
-      'DR ବର୍ଗୀକରଣ, ଲେସନ୍ ସେଗମେଣ୍ଟେସନ୍, ରକ୍ତନଳୀ ସେଗମେଣ୍ଟେସନ୍ ଏବଂ ବିପଦ ବିଶ୍ଳେଷଣ ଚାଲିଛି।',
-
-    qualityWarning:
-      'ବିଶ୍ୱସନୀୟ ବିଶ୍ଳେଷଣ ପାଇଁ ଏହି ଚିତ୍ର ଉପଯୁକ୍ତ ନ ହୋଇପାରେ।',
-
-    noVisualization:
-      'କୌଣସି ଭିଜୁଆଲାଇଜେସନ୍ ଉପଲବ୍ଧ ନାହିଁ',
-
-    clinicalReview:
-      'ଚିକିତ୍ସା ବିଶେଷଜ୍ଞଙ୍କ ସମୀକ୍ଷାର ପରାମର୍ଶ ଦିଆଯାଉଛି।',
-
-    lowConfidence:
-      'କମ୍ ବିଶ୍ୱାସ ସ୍ତର - ମାନବ ବିଶେଷଜ୍ଞଙ୍କ ସମୀକ୍ଷା ଆବଶ୍ୟକ',
-
-    grade0: '0 - DR ନାହିଁ',
-    grade1: '1 - ହାଲୁକା',
-    grade2: '2 - ମଧ୍ୟମ',
-    grade3: '3 - ଗୁରୁତର',
-    grade4: '4 - ପ୍ରୋଲିଫେରେଟିଭ୍',
-
-    urgencyLow: 'କମ୍ ବିପଦ',
-    urgencyModerate: 'ମଧ୍ୟମ ବିପଦ',
-    urgencyHigh: 'ଉଚ୍ଚ ବିପଦ',
-
-    referralRoutine:
-      'ନିୟମିତ ଚକ୍ଷୁ ପରୀକ୍ଷାର ପରାମର୍ଶ ଦିଆଯାଉଛି।',
-
-    referral4Weeks:
-      '4 ସପ୍ତାହ ମଧ୍ୟରେ ବିଶେଷଜ୍ଞଙ୍କ ସହ ପରାମର୍ଶ କରନ୍ତୁ',
-
-    referralUrgent:
-      'ତୁରନ୍ତ ଚକ୍ଷୁ ବିଶେଷଜ୍ଞଙ୍କ ସମୀକ୍ଷାର ପରାମର୍ଶ ଦିଆଯାଉଛି।',
-
-    errorAnalysis: 'ବିଶ୍ଳେଷଣ ବିଫଳ ହେଲା'
+      "Eyeabetics ଏକ AI-ସହାୟିତ ଗବେଷଣା ପ୍ରୋଟୋଟାଇପ୍ ଏବଂ ପେଶାଦାର ଚିକିତ୍ସା ନିଦାନର ବିକଳ୍ପ ନୁହେଁ।",
+    routineMonitoring:
+      "ନିୟମିତ ଚକ୍ଷୁ ପରୀକ୍ଷାର ସୁପାରିଶ।",
+    moderateReferral:
+      "ଚକ୍ଷୁ ବିଶେଷଜ୍ଞଙ୍କ ମୂଲ୍ୟାୟନର ସୁପାରିଶ।",
+    urgentReferral:
+      "ତୁରନ୍ତ ଚକ୍ଷୁ ବିଶେଷଜ୍ଞ ସମୀକ୍ଷାର ସୁପାରିଶ।",
+    uploadRequired: "ଦୟାକରି ପ୍ରଥମେ ଏକ ଫଣ୍ଡସ୍ ଇମେଜ୍ ବାଛନ୍ତୁ।",
+    patientRequired:
+      "ବିଶ୍ଳେଷଣ ପୂର୍ବରୁ Patient ID ଦିଅନ୍ତୁ କିମ୍ବା ରୋଗୀ ସୃଷ୍ଟି କରନ୍ତୁ।",
   },
 
   Bengali: {
-    analysisWorkspace: 'বিশ্লেষণ কর্মক্ষেত্র',
-    fundusAnalysis: 'ফান্ডাস ইমেজ বিশ্লেষণ',
-    livePipeline: 'লাইভ পাইপলাইন',
-    uploadTitle: 'ফান্ডাস ইমেজ আপলোড করুন',
-    uploadText: 'JPG বা PNG রেটিনাল ইমেজ',
-    chooseImage: 'ইমেজ নির্বাচন করুন',
-    imageReady: 'ইমেজ প্রস্তুত',
-    analyze: 'রেটিনা বিশ্লেষণ করুন →',
-    analyzing: 'বিশ্লেষণ চলছে...',
-    analysisComplete: 'বিশ্লেষণ সম্পূর্ণ',
-    retinalResults: 'রেটিনাল বিশ্লেষণের ফলাফল',
-    complete: '● সম্পূর্ণ',
-    original: 'মূল ফান্ডাস',
-    structural: 'গঠনগত বিশ্লেষণ',
-    drGrade: 'DR গ্রেড',
-    confidence: 'বিশ্বাসযোগ্যতা',
-    riskScore: 'ঝুঁকি স্কোর',
-    vesselArea: 'রক্তনালীর এলাকা',
-    lesionFindings: 'লেশন ফলাফল',
-    recommendation: 'পরামর্শ',
-    quality: 'ইমেজের গুণমান',
-    model: 'মডেল',
-    status: 'অবস্থা',
-    analysisDone: 'বিশ্লেষণ সম্পূর্ণ',
-    lesionModel: '4-ক্লাস U-Net',
-    language: 'ভাষা',
-    noLesions: 'কোনও লেশন ক্লাস শনাক্ত হয়নি',
-    classLabel: 'লেশন ক্লাস',
-    pixels: 'পিক্সেল',
-
+    appTitle: "EYEABETICS",
+    appSubtitle: "AI-সহায়িত ডায়াবেটিক রেটিনোপ্যাথি স্ক্রিনিং",
+    patientInformation: "রোগীর তথ্য",
+    patientId: "রোগী ID",
+    patientName: "রোগীর নাম",
+    age: "বয়স",
+    gender: "লিঙ্গ",
+    phone: "ফোন",
+    village: "গ্রাম",
+    district: "জেলা",
+    createPatient: "রোগী তৈরি করুন",
+    patientCreated: "রোগী সফলভাবে তৈরি হয়েছে",
+    uploadTitle: "ফান্ডাস ইমেজ আপলোড করুন",
+    uploadDescription:
+      "AI-সহায়িত স্ক্রিনিংয়ের জন্য রেটিনাল ফান্ডাস ইমেজ আপলোড করুন।",
+    chooseImage: "ফান্ডাস ইমেজ বাছুন",
+    analyzeImage: "ইমেজ বিশ্লেষণ করুন",
+    analyzing: "বিশ্লেষণ হচ্ছে...",
+    selectedImage: "নির্বাচিত ইমেজ",
+    clinicalSummary: "৫-সেকেন্ড ক্লিনিক্যাল সারাংশ",
+    drGrade: "DR গ্রেড",
+    severity: "তীব্রতা",
+    imageQuality: "ইমেজের গুণমান",
+    vesselArea: "রক্তনালীর ক্ষেত্র",
+    riskScore: "ঝুঁকি স্কোর",
+    referral: "রেফারাল",
+    noDr: "ডায়াবেটিক রেটিনোপ্যাথি নেই",
+    mild: "মৃদু",
+    moderate: "মাঝারি",
+    severe: "গুরুতর",
+    proliferative: "প্রোলিফেরেটিভ",
+    routine: "রুটিন",
+    urgent: "জরুরি",
+    review: "ক্লিনিক্যাল রিভিউ",
+    patientPassport: "রেটিনা পাসপোর্ট",
+    screeningHistory: "স্ক্রিনিং ইতিহাস",
+    screenings: "স্ক্রিনিং",
+    currentScreening: "বর্তমান স্ক্রিনিং",
+    previousScreening: "পূর্ববর্তী স্ক্রিনিং",
+    noHistory: "কোনও পূর্ববর্তী স্ক্রিনিং নেই।",
+    triageQueue: "ডাক্তার রিভিউ কিউ",
+    triageDescription:
+      "ক্লিনিক্যাল রিভিউয়ের জন্য AI-সহায়িত স্ক্রিনিং অগ্রাধিকার।",
+    viewCase: "কেস দেখুন",
+    noTriageCases: "বর্তমানে রিভিউ কিউতে কোনও কেস নেই।",
+    visualEvidence: "দৃশ্যমান প্রমাণ",
+    originalFundus: "মূল ফান্ডাস",
+    structuralOverlay: "স্ট্রাকচারাল অ্যানালাইসিস",
+    aiEvidence: "AI Evidence Summary",
+    evidenceDisclaimer:
+      "এটি প্রোটোটাইপ পাইপলাইন থেকে পাওয়া বর্ণনামূলক প্রমাণ; এটি নিউরাল নেটওয়ার্কের সিদ্ধান্তের কারণগত ব্যাখ্যা নয়।",
+    lesionSegmentation: "লেশন সেগমেন্টেশন",
+    vascularStructure: "রক্তনালীর গঠন",
+    classification: "DR তীব্রতা শ্রেণীবিভাগ",
+    progression: "রেটিনাল প্রগ্রেশন",
+    progressionDescription:
+      "রোগীর বর্তমান এবং পূর্ববর্তী স্ক্রিনিং রেকর্ডের তুলনা।",
+    previousGrade: "পূর্ববর্তী গ্রেড",
+    currentGrade: "বর্তমান গ্রেড",
+    gradeChange: "গ্রেড পরিবর্তন",
+    progressionStatus: "প্রগ্রেশন স্ট্যাটাস",
+    progressionPriority: "অগ্রাধিকার",
+    furtherDetails: "অতিরিক্ত ক্লিনিক্যাল বিবরণ",
+    technicalDetails: "টেকনিক্যাল বিবরণ",
+    disclaimerTitle: "মেডিকেল ডিসক্লেমার",
     disclaimer:
-      'AI-সহায়িত স্ক্রিনিং প্রোটোটাইপ। ফলাফল একজন যোগ্য চক্ষু বিশেষজ্ঞের দ্বারা পর্যালোচনা করা উচিত।',
-
-    footer:
-      'AI-সহায়িত রেটিনাল বিশ্লেষণ • গবেষণা প্রোটোটাইপ',
-
-    engineReady: 'MATLAB AI ইঞ্জিন প্রস্তুত',
-
-    retinalIntelligence: 'রেটিনাল ইন্টেলিজেন্স',
-
-    heroTitle1: 'AI-এর মাধ্যমে',
-    heroTitle2: 'চোখকে বুঝুন।',
-
-    heroText:
-      'ফান্ডাস ইমেজ আপলোড করুন এবং Eyeabetics পাইপলাইনকে ডায়াবেটিক রেটিনোপ্যাথি, রেটিনাল লেশন ও রক্তনালীর গঠন বিশ্লেষণ করতে দিন।',
-
-    aiScreening: 'AI রেটিনাল স্ক্রিনিং',
-
-    readyText:
-      'সম্পূর্ণ Eyeabetics AI বিশ্লেষণ পাইপলাইনের জন্য ইমেজ প্রস্তুত।',
-
-    loadingDetails:
-      'DR শ্রেণিবিন্যাস, লেশন সেগমেন্টেশন, রক্তনালী সেগমেন্টেশন এবং ঝুঁকি বিশ্লেষণ চলছে।',
-
-    qualityWarning:
-      'নির্ভরযোগ্য বিশ্লেষণের জন্য এই ইমেজটি উপযুক্ত নাও হতে পারে।',
-
-    noVisualization:
-      'কোনও ভিজ্যুয়ালাইজেশন উপলব্ধ নেই',
-
-    clinicalReview:
-      'চিকিৎসা বিশেষজ্ঞের পর্যালোচনা সুপারিশ করা হচ্ছে।',
-
-    lowConfidence:
-      'কম বিশ্বাসযোগ্যতা - মানব বিশেষজ্ঞের পর্যালোচনা প্রয়োজন',
-
-    grade0: '0 - DR নেই',
-    grade1: '1 - মৃদু',
-    grade2: '2 - মাঝারি',
-    grade3: '3 - গুরুতর',
-    grade4: '4 - প্রোলিফারেটিভ',
-
-    urgencyLow: 'কম ঝুঁকি',
-    urgencyModerate: 'মাঝারি ঝুঁকি',
-    urgencyHigh: 'উচ্চ ঝুঁকি',
-
-    referralRoutine:
-      'নিয়মিত চক্ষু পরীক্ষা করার পরামর্শ দেওয়া হচ্ছে।',
-
-    referral4Weeks:
-      '4 সপ্তাহের মধ্যে বিশেষজ্ঞের পরামর্শ নিন',
-
-    referralUrgent:
-      'জরুরি চক্ষু বিশেষজ্ঞের পর্যালোচনা করার পরামর্শ দেওয়া হচ্ছে।',
-
-    errorAnalysis: 'বিশ্লেষণ ব্যর্থ হয়েছে'
+      "Eyeabetics একটি AI-সহায়িত গবেষণা প্রোটোটাইপ এবং পেশাদার চিকিৎসা নির্ণয়ের বিকল্প নয়।",
+    routineMonitoring:
+      "নিয়মিত চক্ষু পর্যবেক্ষণের পরামর্শ দেওয়া হয়।",
+    moderateReferral:
+      "চক্ষু বিশেষজ্ঞের মূল্যায়নের পরামর্শ দেওয়া হয়।",
+    urgentReferral:
+      "জরুরি চক্ষু বিশেষজ্ঞ পর্যালোচনার পরামর্শ দেওয়া হয়।",
+    uploadRequired: "দয়া করে প্রথমে একটি ফান্ডাস ইমেজ বাছুন।",
+    patientRequired:
+      "বিশ্লেষণের আগে Patient ID দিন অথবা রোগী তৈরি করুন।",
   },
 
   Kannada: {
-    analysisWorkspace: 'ವಿಶ್ಲೇಷಣಾ ಕಾರ್ಯಕ್ಷೇತ್ರ',
-    fundusAnalysis: 'ಫಂಡಸ್ ಚಿತ್ರ ವಿಶ್ಲೇಷಣೆ',
-    livePipeline: 'ಲೈವ್ ಪೈಪ್‌ಲೈನ್',
-    uploadTitle: 'ಫಂಡಸ್ ಚಿತ್ರವನ್ನು ಅಪ್‌ಲೋಡ್ ಮಾಡಿ',
-    uploadText: 'JPG ಅಥವಾ PNG ರೆಟಿನಲ್ ಚಿತ್ರ',
-    chooseImage: 'ಚಿತ್ರ ಆಯ್ಕೆಮಾಡಿ',
-    imageReady: 'ಚಿತ್ರ ಸಿದ್ಧವಾಗಿದೆ',
-    analyze: 'ರೆಟಿನಾ ವಿಶ್ಲೇಷಿಸಿ →',
-    analyzing: 'ವಿಶ್ಲೇಷಣೆ ನಡೆಯುತ್ತಿದೆ...',
-    analysisComplete: 'ವಿಶ್ಲೇಷಣೆ ಪೂರ್ಣಗೊಂಡಿದೆ',
-    retinalResults: 'ರೆಟಿನಲ್ ವಿಶ್ಲೇಷಣೆಯ ಫಲಿತಾಂಶಗಳು',
-    complete: '● ಪೂರ್ಣ',
-    original: 'ಮೂಲ ಫಂಡಸ್',
-    structural: 'ರಚನಾತ್ಮಕ ವಿಶ್ಲೇಷಣೆ',
-    drGrade: 'DR ಗ್ರೇಡ್',
-    confidence: 'ವಿಶ್ವಾಸ ಮಟ್ಟ',
-    riskScore: 'ಅಪಾಯ ಸ್ಕೋರ್',
-    vesselArea: 'ರಕ್ತನಾಳ ಪ್ರದೇಶ',
-    lesionFindings: 'ಲೆಷನ್ ಫಲಿತಾಂಶಗಳು',
-    recommendation: 'ಶಿಫಾರಸು',
-    quality: 'ಚಿತ್ರ ಗುಣಮಟ್ಟ',
-    model: 'ಮಾದರಿ',
-    status: 'ಸ್ಥಿತಿ',
-    analysisDone: 'ವಿಶ್ಲೇಷಣೆ ಪೂರ್ಣ',
-    lesionModel: '4-ಕ್ಲಾಸ್ U-Net',
-    language: 'ಭಾಷೆ',
-    noLesions: 'ಯಾವುದೇ ಲೆಷನ್ ಕ್ಲಾಸ್ ಪತ್ತೆಯಾಗಿಲ್ಲ',
-    classLabel: 'ಲೆಷನ್ ಕ್ಲಾಸ್',
-    pixels: 'ಪಿಕ್ಸೆಲ್‌ಗಳು',
-
+    appTitle: "EYEABETICS",
+    appSubtitle: "AI-ಸಹಾಯಿತ ಡಯಾಬಿಟಿಕ್ ರೆಟಿನೋಪಥಿ ಸ್ಕ್ರೀನಿಂಗ್",
+    patientInformation: "ರೋಗಿಯ ಮಾಹಿತಿ",
+    patientId: "ರೋಗಿ ID",
+    patientName: "ರೋಗಿಯ ಹೆಸರು",
+    age: "ವಯಸ್ಸು",
+    gender: "ಲಿಂಗ",
+    phone: "ಫೋನ್",
+    village: "ಗ್ರಾಮ",
+    district: "ಜಿಲ್ಲೆ",
+    createPatient: "ರೋಗಿಯನ್ನು ರಚಿಸಿ",
+    patientCreated: "ರೋಗಿಯನ್ನು ಯಶಸ್ವಿಯಾಗಿ ರಚಿಸಲಾಗಿದೆ",
+    uploadTitle: "ಫಂಡಸ್ ಚಿತ್ರ ಅಪ್ಲೋಡ್ ಮಾಡಿ",
+    uploadDescription:
+      "AI-ಸಹಾಯಿತ ಸ್ಕ್ರೀನಿಂಗ್‌ಗಾಗಿ ರೆಟಿನಲ್ ಫಂಡಸ್ ಚಿತ್ರವನ್ನು ಅಪ್ಲೋಡ್ ಮಾಡಿ.",
+    chooseImage: "ಫಂಡಸ್ ಚಿತ್ರ ಆಯ್ಕೆಮಾಡಿ",
+    analyzeImage: "ಚಿತ್ರವನ್ನು ವಿಶ್ಲೇಷಿಸಿ",
+    analyzing: "ವಿಶ್ಲೇಷಿಸಲಾಗುತ್ತಿದೆ...",
+    selectedImage: "ಆಯ್ಕೆ ಮಾಡಿದ ಚಿತ್ರ",
+    clinicalSummary: "5-ಸೆಕೆಂಡ್ ಕ್ಲಿನಿಕಲ್ ಸಾರಾಂಶ",
+    drGrade: "DR ಗ್ರೇಡ್",
+    severity: "ತೀವ್ರತೆ",
+    imageQuality: "ಚಿತ್ರ ಗುಣಮಟ್ಟ",
+    vesselArea: "ರಕ್ತನಾಳ ಪ್ರದೇಶ",
+    riskScore: "ಅಪಾಯ ಸ್ಕೋರ್",
+    referral: "ರೆಫರಲ್",
+    noDr: "ಡಯಾಬಿಟಿಕ್ ರೆಟಿನೋಪಥಿ ಇಲ್ಲ",
+    mild: "ಸೌಮ್ಯ",
+    moderate: "ಮಧ್ಯಮ",
+    severe: "ತೀವ್ರ",
+    proliferative: "ಪ್ರೊಲಿಫೆರೇಟಿವ್",
+    routine: "ರೂಟಿನ್",
+    urgent: "ತುರ್ತು",
+    review: "ಕ್ಲಿನಿಕಲ್ ವಿಮರ್ಶೆ",
+    patientPassport: "ರೆಟಿನಾ ಪಾಸ್‌ಪೋರ್ಟ್",
+    screeningHistory: "ಸ್ಕ್ರೀನಿಂಗ್ ಇತಿಹಾಸ",
+    screenings: "ಸ್ಕ್ರೀನಿಂಗ್‌ಗಳು",
+    currentScreening: "ಪ್ರಸ್ತುತ ಸ್ಕ್ರೀನಿಂಗ್",
+    previousScreening: "ಹಿಂದಿನ ಸ್ಕ್ರೀನಿಂಗ್",
+    noHistory: "ಹಿಂದಿನ ಸ್ಕ್ರೀನಿಂಗ್ ಲಭ್ಯವಿಲ್ಲ.",
+    triageQueue: "ವೈದ್ಯರ ವಿಮರ್ಶೆ ಕ್ಯೂ",
+    triageDescription:
+      "ಕ್ಲಿನಿಕಲ್ ವಿಮರ್ಶೆಗಾಗಿ AI-ಸಹಾಯಿತ ಸ್ಕ್ರೀನಿಂಗ್ ಆದ್ಯತೆ.",
+    viewCase: "ಕೇಸ್ ವೀಕ್ಷಿಸಿ",
+    noTriageCases: "ಪ್ರಸ್ತುತ ವಿಮರ್ಶೆ ಕ್ಯೂನಲ್ಲಿ ಯಾವುದೇ ಕೇಸ್ ಇಲ್ಲ.",
+    visualEvidence: "ದೃಶ್ಯ ಸಾಕ್ಷ್ಯ",
+    originalFundus: "ಮೂಲ ಫಂಡಸ್",
+    structuralOverlay: "ರಚನಾತ್ಮಕ ವಿಶ್ಲೇಷಣೆ",
+    aiEvidence: "AI Evidence Summary",
+    evidenceDisclaimer:
+      "ಇದು ಪ್ರೋಟೋಟೈಪ್ ಪೈಪ್‌ಲೈನ್‌ನ ವಿವರಣಾತ್ಮಕ ಸಾಕ್ಷ್ಯ; ಇದು ನ್ಯೂರಲ್ ನೆಟ್‌ವರ್ಕ್ ನಿರ್ಧಾರದ ಕಾರಣಾತ್ಮಕ ವಿವರಣೆಯಲ್ಲ.",
+    lesionSegmentation: "ಲೆಷನ್ ಸೆಗ್ಮೆಂಟೇಶನ್",
+    vascularStructure: "ರಕ್ತನಾಳ ರಚನೆ",
+    classification: "DR ತೀವ್ರತೆ ವರ್ಗೀಕರಣ",
+    progression: "ರೆಟಿನಲ್ ಪ್ರಗತಿ",
+    progressionDescription:
+      "ರೋಗಿಯ ಪ್ರಸ್ತುತ ಮತ್ತು ಹಿಂದಿನ ಸ್ಕ್ರೀನಿಂಗ್ ದಾಖಲೆಗಳ ಹೋಲಿಕೆ.",
+    previousGrade: "ಹಿಂದಿನ ಗ್ರೇಡ್",
+    currentGrade: "ಪ್ರಸ್ತುತ ಗ್ರೇಡ್",
+    gradeChange: "ಗ್ರೇಡ್ ಬದಲಾವಣೆ",
+    progressionStatus: "ಪ್ರಗತಿ ಸ್ಥಿತಿ",
+    progressionPriority: "ಆದ್ಯತೆ",
+    furtherDetails: "ಹೆಚ್ಚುವರಿ ಕ್ಲಿನಿಕಲ್ ವಿವರಗಳು",
+    technicalDetails: "ತಾಂತ್ರಿಕ ವಿವರಗಳು",
+    disclaimerTitle: "ವೈದ್ಯಕೀಯ ಸೂಚನೆ",
     disclaimer:
-      'AI-ಸಹಾಯಿತ ಸ್ಕ್ರೀನಿಂಗ್ ಪ್ರೋಟೋಟೈಪ್. ಫಲಿತಾಂಶಗಳನ್ನು ಅರ್ಹ ನೇತ್ರ ತಜ್ಞರು ಪರಿಶೀಲಿಸಬೇಕು.',
-
-    footer:
-      'AI-ಸಹಾಯಿತ ರೆಟಿನಲ್ ವಿಶ್ಲೇಷಣೆ • ಸಂಶೋಧನಾ ಪ್ರೋಟೋಟೈಪ್',
-
-    engineReady: 'MATLAB AI ಎಂಜಿನ್ ಸಿದ್ಧವಾಗಿದೆ',
-
-    retinalIntelligence: 'ರೆಟಿನಲ್ ಇಂಟೆಲಿಜೆನ್ಸ್',
-
-    heroTitle1: 'AI ಮೂಲಕ',
-    heroTitle2: 'ಕಣ್ಣನ್ನು ಅರ್ಥಮಾಡಿಕೊಳ್ಳಿ.',
-
-    heroText:
-      'ಫಂಡಸ್ ಚಿತ್ರವನ್ನು ಅಪ್‌ಲೋಡ್ ಮಾಡಿ ಮತ್ತು Eyeabetics ಪೈಪ್‌ಲೈನ್ ಡಯಾಬೆಟಿಕ್ ರೆಟಿನೋಪತಿ, ರೆಟಿನಲ್ ಲೆಷನ್‌ಗಳು ಮತ್ತು ರಕ್ತನಾಳಗಳ ರಚನೆಯನ್ನು ವಿಶ್ಲೇಷಿಸಲು ಅವಕಾಶ ನೀಡಿ.',
-
-    aiScreening: 'AI ರೆಟಿನಲ್ ಸ್ಕ್ರೀನಿಂಗ್',
-
-    readyText:
-      'ಸಂಪೂರ್ಣ Eyeabetics AI ವಿಶ್ಲೇಷಣಾ ಪೈಪ್‌ಲೈನ್‌ಗೆ ಚಿತ್ರ ಸಿದ್ಧವಾಗಿದೆ.',
-
-    loadingDetails:
-      'DR ವರ್ಗೀಕರಣ, ಲೆಷನ್ ಸೆಗ್ಮೆಂಟೇಶನ್, ರಕ್ತನಾಳ ಸೆಗ್ಮೆಂಟೇಶನ್ ಮತ್ತು ಅಪಾಯ ವಿಶ್ಲೇಷಣೆ ನಡೆಯುತ್ತಿದೆ.',
-
-    qualityWarning:
-      'ವಿಶ್ವಾಸಾರ್ಹ ವಿಶ್ಲೇಷಣೆಗೆ ಈ ಚಿತ್ರ ಸೂಕ್ತವಾಗಿರದಿರಬಹುದು.',
-
-    noVisualization:
-      'ಯಾವುದೇ ದೃಶ್ಯೀಕರಣ ಲಭ್ಯವಿಲ್ಲ',
-
-    clinicalReview:
-      'ವೈದ್ಯಕೀಯ ತಜ್ಞರ ಪರಿಶೀಲನೆಯನ್ನು ಶಿಫಾರಸು ಮಾಡಲಾಗಿದೆ.',
-
-    lowConfidence:
-      'ಕಡಿಮೆ ವಿಶ್ವಾಸ ಮಟ್ಟ - ಮಾನವ ತಜ್ಞರ ಪರಿಶೀಲನೆ ಅಗತ್ಯ',
-
-    grade0: '0 - DR ಇಲ್ಲ',
-    grade1: '1 - ಸೌಮ್ಯ',
-    grade2: '2 - ಮಧ್ಯಮ',
-    grade3: '3 - ತೀವ್ರ',
-    grade4: '4 - ಪ್ರೊಲಿಫೆರೇಟಿವ್',
-
-    urgencyLow: 'ಕಡಿಮೆ ಅಪಾಯ',
-    urgencyModerate: 'ಮಧ್ಯಮ ಅಪಾಯ',
-    urgencyHigh: 'ಹೆಚ್ಚಿನ ಅಪಾಯ',
-
-    referralRoutine:
-      'ನಿಯಮಿತ ನೇತ್ರ ತಪಾಸಣೆಯನ್ನು ಶಿಫಾರಸು ಮಾಡಲಾಗಿದೆ.',
-
-    referral4Weeks:
-      '4 ವಾರಗಳೊಳಗೆ ತಜ್ಞರನ್ನು ಸಂಪರ್ಕಿಸಿ',
-
-    referralUrgent:
-      'ತುರ್ತು ನೇತ್ರ ತಜ್ಞರ ಪರಿಶೀಲನೆಯನ್ನು ಶಿಫಾರಸು ಮಾಡಲಾಗಿದೆ.',
-
-    errorAnalysis: 'ವಿಶ್ಲೇಷಣೆ ವಿಫಲವಾಗಿದೆ'
+      "Eyeabetics ಒಂದು AI-ಸಹಾಯಿತ ಸಂಶೋಧನಾ ಪ್ರೋಟೋಟೈಪ್ ಮತ್ತು ವೃತ್ತಿಪರ ವೈದ್ಯಕೀಯ ನಿರ್ಣಯಕ್ಕೆ ಪರ್ಯಾಯವಲ್ಲ.",
+    routineMonitoring:
+      "ನಿಯಮಿತ ನೇತ್ರ ಮೇಲ್ವಿಚಾರಣೆಯನ್ನು ಶಿಫಾರಸು ಮಾಡಲಾಗಿದೆ.",
+    moderateReferral:
+      "ನೇತ್ರ ತಜ್ಞರ ಮೌಲ್ಯಮಾಪನವನ್ನು ಶಿಫಾರಸು ಮಾಡಲಾಗಿದೆ.",
+    urgentReferral:
+      "ತುರ್ತು ನೇತ್ರ ತಜ್ಞರ ವಿಮರ್ಶೆಯನ್ನು ಶಿಫಾರಸು ಮಾಡಲಾಗಿದೆ.",
+    uploadRequired: "ದಯವಿಟ್ಟು ಮೊದಲು ಫಂಡಸ್ ಚಿತ್ರವನ್ನು ಆಯ್ಕೆಮಾಡಿ.",
+    patientRequired:
+      "ವಿಶ್ಲೇಷಣೆಗೆ ಮೊದಲು Patient ID ನಮೂದಿಸಿ ಅಥವಾ ರೋಗಿಯನ್ನು ರಚಿಸಿ.",
   },
 
   Tamil: {
-    analysisWorkspace: 'பகுப்பாய்வு பணியிடம்',
-    fundusAnalysis: 'ஃபண்டஸ் படப் பகுப்பாய்வு',
-    livePipeline: 'நேரடி பைப்லைன்',
-    uploadTitle: 'ஃபண்டஸ் படத்தை பதிவேற்றவும்',
-    uploadText: 'JPG அல்லது PNG விழித்திரை படம்',
-    chooseImage: 'படத்தைத் தேர்ந்தெடுக்கவும்',
-    imageReady: 'படம் தயாராக உள்ளது',
-    analyze: 'விழித்திரையை பகுப்பாய்வு செய் →',
-    analyzing: 'பகுப்பாய்வு நடைபெறுகிறது...',
-    analysisComplete: 'பகுப்பாய்வு முடிந்தது',
-    retinalResults: 'விழித்திரை பகுப்பாய்வு முடிவுகள்',
-    complete: '● முடிந்தது',
-    original: 'அசல் ஃபண்டஸ்',
-    structural: 'கட்டமைப்பு பகுப்பாய்வு',
-    drGrade: 'DR தரம்',
-    confidence: 'நம்பகத்தன்மை',
-    riskScore: 'ஆபத்து மதிப்பெண்',
-    vesselArea: 'இரத்த நாள பகுதி',
-    lesionFindings: 'காய முடிவுகள்',
-    recommendation: 'பரிந்துரை',
-    quality: 'படத் தரம்',
-    model: 'மாதிரி',
-    status: 'நிலை',
-    analysisDone: 'பகுப்பாய்வு முடிந்தது',
-    lesionModel: '4-வகுப்பு U-Net',
-    language: 'மொழி',
-    noLesions: 'காய வகுப்புகள் எதுவும் கண்டறியப்படவில்லை',
-    classLabel: 'காய வகுப்பு',
-    pixels: 'பிக்சல்கள்',
-
+    appTitle: "EYEABETICS",
+    appSubtitle: "AI-உதவியுடன் நீரிழிவு ரெட்டினோபதி ஸ்கிரீனிங்",
+    patientInformation: "நோயாளி தகவல்",
+    patientId: "நோயாளி ID",
+    patientName: "நோயாளியின் பெயர்",
+    age: "வயது",
+    gender: "பாலினம்",
+    phone: "தொலைபேசி",
+    village: "கிராமம்",
+    district: "மாவட்டம்",
+    createPatient: "நோயாளியை உருவாக்கு",
+    patientCreated: "நோயாளி வெற்றிகரமாக உருவாக்கப்பட்டார்",
+    uploadTitle: "Fundus படத்தை பதிவேற்றவும்",
+    uploadDescription:
+      "AI உதவியுடன் ஸ்கிரீனிங் செய்ய retinal fundus படத்தை பதிவேற்றவும்.",
+    chooseImage: "Fundus படத்தைத் தேர்வு செய்க",
+    analyzeImage: "படத்தை பகுப்பாய்வு செய்க",
+    analyzing: "பகுப்பாய்வு நடைபெறுகிறது...",
+    selectedImage: "தேர்ந்தெடுக்கப்பட்ட படம்",
+    clinicalSummary: "5-வினாடி மருத்துவ சுருக்கம்",
+    drGrade: "DR தரம்",
+    severity: "தீவிரம்",
+    imageQuality: "படத் தரம்",
+    vesselArea: "இரத்த நாளப் பகுதி",
+    riskScore: "ஆபத்து மதிப்பெண்",
+    referral: "பரிந்துரை",
+    noDr: "நீரிழிவு ரெட்டினோபதி இல்லை",
+    mild: "லேசான",
+    moderate: "மிதமான",
+    severe: "கடுமையான",
+    proliferative: "ப்ரோலிஃபெரேட்டிவ்",
+    routine: "வழக்கமான",
+    urgent: "அவசரம்",
+    review: "மருத்துவ மதிப்பாய்வு",
+    patientPassport: "ரெட்டினா பாஸ்போர்ட்",
+    screeningHistory: "ஸ்கிரீனிங் வரலாறு",
+    screenings: "ஸ்கிரீனிங்ஸ்",
+    currentScreening: "தற்போதைய ஸ்கிரீனிங்",
+    previousScreening: "முந்தைய ஸ்கிரீனிங்",
+    noHistory: "முந்தைய ஸ்கிரீனிங் இல்லை.",
+    triageQueue: "மருத்துவர் மதிப்பாய்வு வரிசை",
+    triageDescription:
+      "மருத்துவ மதிப்பாய்விற்கான AI உதவியுடன் ஸ்கிரீனிங் முன்னுரிமை.",
+    viewCase: "கேஸைக் காண்க",
+    noTriageCases: "தற்போது மதிப்பாய்வு வரிசையில் கேஸ்கள் இல்லை.",
+    visualEvidence: "காட்சி ஆதாரம்",
+    originalFundus: "அசல் Fundus",
+    structuralOverlay: "கட்டமைப்பு பகுப்பாய்வு",
+    aiEvidence: "AI Evidence Summary",
+    evidenceDisclaimer:
+      "இது prototype pipeline-இலிருந்து பெறப்பட்ட விளக்க ஆதாரம்; neural network முடிவின் காரண விளக்கம் அல்ல.",
+    lesionSegmentation: "Lesion Segmentation",
+    vascularStructure: "Vascular Structure",
+    classification: "DR தீவிரத்தன்மை வகைப்பாடு",
+    progression: "Retinal Progression",
+    progressionDescription:
+      "நோயாளியின் தற்போதைய மற்றும் முந்தைய ஸ்கிரீனிங் பதிவுகளின் ஒப்பீடு.",
+    previousGrade: "முந்தைய தரம்",
+    currentGrade: "தற்போதைய தரம்",
+    gradeChange: "தர மாற்றம்",
+    progressionStatus: "முன்னேற்ற நிலை",
+    progressionPriority: "முன்னுரிமை",
+    furtherDetails: "கூடுதல் மருத்துவ விவரங்கள்",
+    technicalDetails: "தொழில்நுட்ப விவரங்கள்",
+    disclaimerTitle: "மருத்துவ மறுப்பு",
     disclaimer:
-      'AI-உதவிய திரையிடல் முன்மாதிரி. முடிவுகளை தகுதியான கண் மருத்துவர் மதிப்பாய்வு செய்ய வேண்டும்.',
-
-    footer:
-      'AI-உதவிய விழித்திரை பகுப்பாய்வு • ஆராய்ச்சி முன்மாதிரி',
-
-    engineReady: 'MATLAB AI இயந்திரம் தயாராக உள்ளது',
-
-    retinalIntelligence: 'விழித்திரை நுண்ணறிவு',
-
-    heroTitle1: 'AI மூலம்',
-    heroTitle2: 'கண்ணைப் புரிந்துகொள்ளுங்கள்.',
-
-    heroText:
-      'ஃபண்டஸ் படத்தைப் பதிவேற்றி, Eyeabetics பைப்லைன் நீரிழிவு விழித்திரை நோய், விழித்திரை காயங்கள் மற்றும் இரத்த நாள அமைப்பை பகுப்பாய்வு செய்யட்டும்.',
-
-    aiScreening: 'AI விழித்திரை ஸ்கிரீனிங்',
-
-    readyText:
-      'முழுமையான Eyeabetics AI பகுப்பாய்வு பைப்லைனுக்கு படம் தயாராக உள்ளது.',
-
-    loadingDetails:
-      'DR வகைப்படுத்தல், காயப் பிரிவு, இரத்த நாளப் பிரிவு மற்றும் ஆபத்து பகுப்பாய்வு நடைபெறுகிறது.',
-
-    qualityWarning:
-      'நம்பகமான பகுப்பாய்வுக்கு இந்தப் படம் பொருத்தமானதாக இல்லாமல் இருக்கலாம்.',
-
-    noVisualization:
-      'காட்சிப்படுத்தல் எதுவும் இல்லை',
-
-    clinicalReview:
-      'மருத்துவ நிபுணரின் மதிப்பாய்வு பரிந்துரைக்கப்படுகிறது.',
-
-    lowConfidence:
-      'குறைந்த நம்பகத்தன்மை - மனித நிபுணர் மதிப்பாய்வு அவசியம்',
-
-    grade0: '0 - DR இல்லை',
-    grade1: '1 - லேசான',
-    grade2: '2 - மிதமான',
-    grade3: '3 - கடுமையான',
-    grade4: '4 - பெருக்கமடைந்த',
-
-    urgencyLow: 'குறைந்த ஆபத்து',
-    urgencyModerate: 'மிதமான ஆபத்து',
-    urgencyHigh: 'அதிக ஆபத்து',
-
-    referralRoutine:
-      'வழக்கமான கண் பரிசோதனை பரிந்துரைக்கப்படுகிறது.',
-
-    referral4Weeks:
-      '4 வாரங்களுக்குள் நிபுணரை அணுகவும்',
-
-    referralUrgent:
-      'அவசர கண் நிபுணர் மதிப்பாய்வு பரிந்துரைக்கப்படுகிறது.',
-
-    errorAnalysis: 'பகுப்பாய்வு தோல்வியடைந்தது'
+      "Eyeabetics ஒரு AI உதவியுடன் செயல்படும் ஆராய்ச்சி prototype; இது தொழில்முறை மருத்துவ நோயறிதலுக்கு மாற்றாகாது.",
+    routineMonitoring:
+      "வழக்கமான கண் பரிசோதனை பரிந்துரைக்கப்படுகிறது.",
+    moderateReferral:
+      "கண் நிபுணர் மதிப்பீடு பரிந்துரைக்கப்படுகிறது.",
+    urgentReferral:
+      "அவசர கண் நிபுணர் மதிப்பாய்வு பரிந்துரைக்கப்படுகிறது.",
+    uploadRequired: "முதலில் Fundus படத்தைத் தேர்வு செய்யவும்.",
+    patientRequired:
+      "பகுப்பாய்விற்கு முன் Patient ID உள்ளிடவும் அல்லது நோயாளியை உருவாக்கவும்.",
   },
 
   Telugu: {
-    analysisWorkspace: 'విశ్లేషణ కార్యస్థలం',
-    fundusAnalysis: 'ఫండస్ చిత్ర విశ్లేషణ',
-    livePipeline: 'లైవ్ పైప్‌లైన్',
-    uploadTitle: 'ఫండస్ చిత్రాన్ని అప్‌లోడ్ చేయండి',
-    uploadText: 'JPG లేదా PNG రెటినల్ చిత్రం',
-    chooseImage: 'చిత్రాన్ని ఎంచుకోండి',
-    imageReady: 'చిత్రం సిద్ధంగా ఉంది',
-    analyze: 'రెటినాను విశ్లేషించండి →',
-    analyzing: 'విశ్లేషణ జరుగుతోంది...',
-    analysisComplete: 'విశ్లేషణ పూర్తయింది',
-    retinalResults: 'రెటినల్ విశ్లేషణ ఫలితాలు',
-    complete: '● పూర్తయింది',
-    original: 'అసలు ఫండస్',
-    structural: 'నిర్మాణ విశ్లేషణ',
-    drGrade: 'DR గ్రేడ్',
-    confidence: 'నమ్మక స్థాయి',
-    riskScore: 'ప్రమాద స్కోర్',
-    vesselArea: 'రక్తనాళ ప్రాంతం',
-    lesionFindings: 'లెషన్ ఫలితాలు',
-    recommendation: 'సిఫార్సు',
-    quality: 'చిత్ర నాణ్యత',
-    model: 'మోడల్',
-    status: 'స్థితి',
-    analysisDone: 'విశ్లేషణ పూర్తయింది',
-    lesionModel: '4-క్లాస్ U-Net',
-    language: 'భాష',
-    noLesions: 'లెషన్ క్లాసులు గుర్తించబడలేదు',
-    classLabel: 'లెషన్ క్లాస్',
-    pixels: 'పిక్సెల్స్',
-
+    appTitle: "EYEABETICS",
+    appSubtitle: "AI-సహాయక డయాబెటిక్ రెటినోపతి స్క్రీనింగ్",
+    patientInformation: "రోగి సమాచారం",
+    patientId: "రోగి ID",
+    patientName: "రోగి పేరు",
+    age: "వయస్సు",
+    gender: "లింగం",
+    phone: "ఫోన్",
+    village: "గ్రామం",
+    district: "జిల్లా",
+    createPatient: "రోగిని సృష్టించండి",
+    patientCreated: "రోగి విజయవంతంగా సృష్టించబడింది",
+    uploadTitle: "ఫండస్ చిత్రాన్ని అప్లోడ్ చేయండి",
+    uploadDescription:
+      "AI సహాయక స్క్రీనింగ్ కోసం రెటినల్ ఫండస్ చిత్రాన్ని అప్లోడ్ చేయండి.",
+    chooseImage: "ఫండస్ చిత్రాన్ని ఎంచుకోండి",
+    analyzeImage: "చిత్రాన్ని విశ్లేషించండి",
+    analyzing: "విశ్లేషిస్తోంది...",
+    selectedImage: "ఎంచుకున్న చిత్రం",
+    clinicalSummary: "5-సెకన్ల క్లినికల్ సారాంశం",
+    drGrade: "DR గ్రేడ్",
+    severity: "తీవ్రత",
+    imageQuality: "చిత్ర నాణ్యత",
+    vesselArea: "రక్తనాళ ప్రాంతం",
+    riskScore: "రిస్క్ స్కోర్",
+    referral: "రిఫరల్",
+    noDr: "డయాబెటిక్ రెటినోపతి లేదు",
+    mild: "తేలికపాటి",
+    moderate: "మధ్యస్థ",
+    severe: "తీవ్రమైన",
+    proliferative: "ప్రోలిఫెరేటివ్",
+    routine: "రూటీన్",
+    urgent: "అత్యవసరం",
+    review: "క్లినికల్ సమీక్ష",
+    patientPassport: "రెటినా పాస్‌పోర్ట్",
+    screeningHistory: "స్క్రీనింగ్ చరిత్ర",
+    screenings: "స్క్రీనింగ్‌లు",
+    currentScreening: "ప్రస్తుత స్క్రీనింగ్",
+    previousScreening: "మునుపటి స్క్రీనింగ్",
+    noHistory: "మునుపటి స్క్రీనింగ్ అందుబాటులో లేదు.",
+    triageQueue: "డాక్టర్ సమీక్ష క్యూ",
+    triageDescription:
+      "క్లినికల్ సమీక్ష కోసం AI సహాయక స్క్రీనింగ్ ప్రాధాన్యత.",
+    viewCase: "కేస్ చూడండి",
+    noTriageCases: "ప్రస్తుతం సమీక్ష క్యూ లో కేసులు లేవు.",
+    visualEvidence: "దృశ్య ఆధారం",
+    originalFundus: "అసలు ఫండస్",
+    structuralOverlay: "నిర్మాణ విశ్లేషణ",
+    aiEvidence: "AI Evidence Summary",
+    evidenceDisclaimer:
+      "ఇది ప్రోటోటైప్ పైప్‌లైన్ నుండి వచ్చిన వివరణాత్మక ఆధారం; ఇది న్యూరల్ నెట్‌వర్క్ నిర్ణయానికి కారణాత్మక వివరణ కాదు.",
+    lesionSegmentation: "లెషన్ సెగ్మెంటేషన్",
+    vascularStructure: "రక్తనాళ నిర్మాణం",
+    classification: "DR తీవ్రత వర్గీకరణ",
+    progression: "రెటినల్ ప్రోగ్రెషన్",
+    progressionDescription:
+      "రోగి ప్రస్తుత మరియు మునుపటి స్క్రీనింగ్ రికార్డుల పోలిక.",
+    previousGrade: "మునుపటి గ్రేడ్",
+    currentGrade: "ప్రస్తుత గ్రేడ్",
+    gradeChange: "గ్రేడ్ మార్పు",
+    progressionStatus: "ప్రోగ్రెషన్ స్థితి",
+    progressionPriority: "ప్రాధాన్యత",
+    furtherDetails: "అదనపు క్లినికల్ వివరాలు",
+    technicalDetails: "సాంకేతిక వివరాలు",
+    disclaimerTitle: "వైద్య నిరాకరణ",
     disclaimer:
-      'AI సహాయంతో కూడిన స్క్రీనింగ్ ప్రోటోటైప్. ఫలితాలను అర్హత కలిగిన నేత్ర వైద్యుడు సమీక్షించాలి.',
-
-    footer:
-      'AI సహాయంతో రెటినల్ విశ్లేషణ • పరిశోధనా ప్రోటోటైప్',
-
-    engineReady: 'MATLAB AI ఇంజిన్ సిద్ధంగా ఉంది',
-
-    retinalIntelligence: 'రెటినల్ ఇంటెలిజెన్స్',
-
-    heroTitle1: 'AI ద్వారా',
-    heroTitle2: 'కంటిని అర్థం చేసుకోండి.',
-
-    heroText:
-      'ఫండస్ చిత్రాన్ని అప్‌లోడ్ చేసి Eyeabetics పైప్‌లైన్ ద్వారా డయాబెటిక్ రెటినోపతి, రెటినల్ లెషన్లు మరియు రక్తనాళ నిర్మాణాన్ని విశ్లేషించండి.',
-
-    aiScreening: 'AI రెటినల్ స్క్రీనింగ్',
-
-    readyText:
-      'పూర్తి Eyeabetics AI విశ్లేషణ పైప్‌లైన్‌కు చిత్రం సిద్ధంగా ఉంది.',
-
-    loadingDetails:
-      'DR వర్గీకరణ, లెషన్ సెగ్మెంటేషన్, రక్తనాళ సెగ్మెంటేషన్ మరియు ప్రమాద విశ్లేషణ జరుగుతున్నాయి.',
-
-    qualityWarning:
-      'నమ్మకమైన విశ్లేషణకు ఈ చిత్రం అనుకూలంగా ఉండకపోవచ్చు.',
-
-    noVisualization:
-      'విజువలైజేషన్ అందుబాటులో లేదు',
-
-    clinicalReview:
-      'వైద్య నిపుణుల సమీక్ష సిఫార్సు చేయబడింది.',
-
-    lowConfidence:
-      'తక్కువ నమ్మక స్థాయి - మానవ నిపుణుల సమీక్ష అవసరం',
-
-    grade0: '0 - DR లేదు',
-    grade1: '1 - తేలికపాటి',
-    grade2: '2 - మోస్తరు',
-    grade3: '3 - తీవ్రమైన',
-    grade4: '4 - ప్రొలిఫరేటివ్',
-
-    urgencyLow: 'తక్కువ ప్రమాదం',
-    urgencyModerate: 'మధ్యస్థ ప్రమాదం',
-    urgencyHigh: 'అధిక ప్రమాదం',
-
-    referralRoutine:
-      'సాధారణ నేత్ర పరీక్షను సిఫార్సు చేస్తున్నాము.',
-
-    referral4Weeks:
-      '4 వారాల్లో నిపుణుడిని సంప్రదించండి',
-
-    referralUrgent:
-      'తక్షణ నేత్ర వైద్య నిపుణుల సమీక్ష సిఫార్సు చేయబడింది.',
-
-    errorAnalysis: 'విశ్లేషణ విఫలమైంది'
+      "Eyeabetics ఒక AI సహాయక పరిశోధనా ప్రోటోటైప్ మరియు వృత్తిపరమైన వైద్య నిర్ధారణకు ప్రత్యామ్నాయం కాదు.",
+    routineMonitoring:
+      "క్రమం తప్పకుండా నేత్ర పరీక్ష సిఫార్సు చేయబడింది.",
+    moderateReferral:
+      "నేత్ర నిపుణుల మూల్యాంకనం సిఫార్సు చేయబడింది.",
+    urgentReferral:
+      "అత్యవసర నేత్ర నిపుణుల సమీక్ష సిఫార్సు చేయబడింది.",
+    uploadRequired: "ముందుగా ఫండస్ చిత్రాన్ని ఎంచుకోండి.",
+    patientRequired:
+      "విశ్లేషణకు ముందు Patient ID ఇవ్వండి లేదా రోగిని సృష్టించండి.",
   },
 
   Marathi: {
-    analysisWorkspace: 'विश्लेषण कार्यक्षेत्र',
-    fundusAnalysis: 'फंडस प्रतिमा विश्लेषण',
-    livePipeline: 'लाईव्ह पाइपलाइन',
-    uploadTitle: 'फंडस प्रतिमा अपलोड करा',
-    uploadText: 'JPG किंवा PNG रेटिनल प्रतिमा',
-    chooseImage: 'प्रतिमा निवडा',
-    imageReady: 'प्रतिमा तयार',
-    analyze: 'रेटिनाचे विश्लेषण करा →',
-    analyzing: 'विश्लेषण सुरू आहे...',
-    analysisComplete: 'विश्लेषण पूर्ण',
-    retinalResults: 'रेटिनल विश्लेषणाचे परिणाम',
-    complete: '● पूर्ण',
-    original: 'मूळ फंडस',
-    structural: 'संरचनात्मक विश्लेषण',
-    drGrade: 'DR ग्रेड',
-    confidence: 'विश्वास पातळी',
-    riskScore: 'जोखीम स्कोअर',
-    vesselArea: 'रक्तवाहिनी क्षेत्र',
-    lesionFindings: 'लेझन निष्कर्ष',
-    recommendation: 'शिफारस',
-    quality: 'प्रतिमा गुणवत्ता',
-    model: 'मॉडेल',
-    status: 'स्थिती',
-    analysisDone: 'विश्लेषण पूर्ण',
-    lesionModel: '4-क्लास U-Net',
-    language: 'भाषा',
-    noLesions: 'कोणतेही लेझन वर्ग आढळले नाहीत',
-    classLabel: 'लेझन वर्ग',
-    pixels: 'पिक्सेल',
-
+    appTitle: "EYEABETICS",
+    appSubtitle: "AI-सहाय्यित डायबेटिक रेटिनोपॅथी स्क्रीनिंग",
+    patientInformation: "रुग्ण माहिती",
+    patientId: "रुग्ण ID",
+    patientName: "रुग्णाचे नाव",
+    age: "वय",
+    gender: "लिंग",
+    phone: "फोन",
+    village: "गाव",
+    district: "जिल्हा",
+    createPatient: "रुग्ण तयार करा",
+    patientCreated: "रुग्ण यशस्वीरित्या तयार झाला",
+    uploadTitle: "फंडस प्रतिमा अपलोड करा",
+    uploadDescription:
+      "AI-सहाय्यित स्क्रीनिंगसाठी रेटिनल फंडस प्रतिमा अपलोड करा.",
+    chooseImage: "फंडस प्रतिमा निवडा",
+    analyzeImage: "प्रतिमेचे विश्लेषण करा",
+    analyzing: "विश्लेषण सुरू आहे...",
+    selectedImage: "निवडलेली प्रतिमा",
+    clinicalSummary: "5-सेकंद क्लिनिकल सारांश",
+    drGrade: "DR ग्रेड",
+    severity: "तीव्रता",
+    imageQuality: "प्रतिमा गुणवत्ता",
+    vesselArea: "रक्तवाहिनी क्षेत्र",
+    riskScore: "जोखीम स्कोअर",
+    referral: "रेफरल",
+    noDr: "डायबेटिक रेटिनोपॅथी नाही",
+    mild: "सौम्य",
+    moderate: "मध्यम",
+    severe: "गंभीर",
+    proliferative: "प्रोलिफेरेटिव्ह",
+    routine: "नियमित",
+    urgent: "तातडीचे",
+    review: "क्लिनिकल पुनरावलोकन",
+    patientPassport: "रेटिना पासपोर्ट",
+    screeningHistory: "स्क्रीनिंग इतिहास",
+    screenings: "स्क्रीनिंग",
+    currentScreening: "सध्याचे स्क्रीनिंग",
+    previousScreening: "मागील स्क्रीनिंग",
+    noHistory: "मागील स्क्रीनिंग उपलब्ध नाही.",
+    triageQueue: "डॉक्टर पुनरावलोकन क्यू",
+    triageDescription:
+      "क्लिनिकल पुनरावलोकनासाठी AI-सहाय्यित स्क्रीनिंग प्राधान्य.",
+    viewCase: "केस पहा",
+    noTriageCases: "सध्या पुनरावलोकन क्यूमध्ये कोणतेही केस नाहीत.",
+    visualEvidence: "दृश्य पुरावा",
+    originalFundus: "मूळ फंडस",
+    structuralOverlay: "संरचनात्मक विश्लेषण",
+    aiEvidence: "AI Evidence Summary",
+    evidenceDisclaimer:
+      "हा प्रोटोटाइप पाइपलाइनमधून मिळालेला वर्णनात्मक पुरावा आहे; हा न्यूरल नेटवर्कच्या निर्णयाचे कारणात्मक स्पष्टीकरण नाही.",
+    lesionSegmentation: "लेजन सेगमेंटेशन",
+    vascularStructure: "रक्तवाहिनी संरचना",
+    classification: "DR तीव्रता वर्गीकरण",
+    progression: "रेटिनल प्रगती",
+    progressionDescription:
+      "रुग्णाच्या सध्याच्या आणि मागील स्क्रीनिंग नोंदींची तुलना.",
+    previousGrade: "मागील ग्रेड",
+    currentGrade: "सध्याचा ग्रेड",
+    gradeChange: "ग्रेड बदल",
+    progressionStatus: "प्रगती स्थिती",
+    progressionPriority: "प्राधान्य",
+    furtherDetails: "अधिक क्लिनिकल तपशील",
+    technicalDetails: "तांत्रिक तपशील",
+    disclaimerTitle: "वैद्यकीय अस्वीकरण",
     disclaimer:
-      'AI-सहाय्यित स्क्रीनिंग प्रोटोटाइप. परिणामांची पात्र नेत्रतज्ज्ञांकडून तपासणी केली पाहिजे.',
-
-    footer:
-      'AI-सहाय्यित रेटिनल विश्लेषण • संशोधन प्रोटोटाइप',
-
-    engineReady: 'MATLAB AI इंजिन तयार आहे',
-
-    retinalIntelligence: 'रेटिनल इंटेलिजन्स',
-
-    heroTitle1: 'AI द्वारे',
-    heroTitle2: 'डोळा समजून घ्या.',
-
-    heroText:
-      'फंडस प्रतिमा अपलोड करा आणि Eyeabetics पाइपलाइनद्वारे डायबेटिक रेटिनोपॅथी, रेटिनल लेझन्स आणि रक्तवाहिन्यांच्या संरचनेचे विश्लेषण करा.',
-
-    aiScreening: 'AI रेटिनल स्क्रीनिंग',
-
-    readyText:
-      'संपूर्ण Eyeabetics AI विश्लेषण पाइपलाइनसाठी प्रतिमा तयार आहे.',
-
-    loadingDetails:
-      'DR वर्गीकरण, लेझन सेगमेंटेशन, रक्तवाहिनी सेगमेंटेशन आणि जोखीम विश्लेषण सुरू आहे.',
-
-    qualityWarning:
-      'विश्वसनीय विश्लेषणासाठी ही प्रतिमा योग्य नसू शकते.',
-
-    noVisualization:
-      'कोणतेही व्हिज्युअलायझेशन उपलब्ध नाही',
-
-    clinicalReview:
-      'वैद्यकीय तज्ज्ञांकडून तपासणी करण्याची शिफारस केली जाते.',
-
-    lowConfidence:
-      'कमी विश्वास पातळी - मानवी तज्ज्ञांची तपासणी आवश्यक',
-
-    grade0: '0 - DR नाही',
-    grade1: '1 - सौम्य',
-    grade2: '2 - मध्यम',
-    grade3: '3 - गंभीर',
-    grade4: '4 - प्रोलिफरेटिव्ह',
-
-    urgencyLow: 'कमी जोखीम',
-    urgencyModerate: 'मध्यम जोखीम',
-    urgencyHigh: 'उच्च जोखीम',
-
-    referralRoutine:
-      'नियमित नेत्र तपासणीची शिफारस केली जाते.',
-
-    referral4Weeks:
-      '4 आठवड्यांच्या आत तज्ज्ञांचा सल्ला घ्या',
-
-    referralUrgent:
-      'तातडीच्या नेत्रतज्ज्ञ तपासणीची शिफारस केली जाते.',
-
-    errorAnalysis: 'विश्लेषण अयशस्वी झाले'
+      "Eyeabetics हा AI-सहाय्यित संशोधन प्रोटोटाइप आहे आणि व्यावसायिक वैद्यकीय निदानाचा पर्याय नाही.",
+    routineMonitoring:
+      "नियमित नेत्र तपासणीची शिफारस केली जाते.",
+    moderateReferral:
+      "नेत्रतज्ज्ञ मूल्यांकनाची शिफारस केली जाते.",
+    urgentReferral:
+      "तातडीच्या नेत्रतज्ज्ञ पुनरावलोकनाची शिफारस केली जाते.",
+    uploadRequired: "कृपया प्रथम फंडस प्रतिमा निवडा.",
+    patientRequired:
+      "विश्लेषणापूर्वी Patient ID द्या किंवा रुग्ण तयार करा.",
   },
 
   Gujarati: {
-    analysisWorkspace: 'વિશ્લેષણ કાર્યક્ષેત્ર',
-    fundusAnalysis: 'ફંડસ ઈમેજ વિશ્લેષણ',
-    livePipeline: 'લાઈવ પાઇપલાઇન',
-    uploadTitle: 'ફંડસ ઈમેજ અપલોડ કરો',
-    uploadText: 'JPG અથવા PNG રેટિનલ ઈમેજ',
-    chooseImage: 'ઈમેજ પસંદ કરો',
-    imageReady: 'ઈમેજ તૈયાર',
-    analyze: 'રેટિનાનું વિશ્લેષણ કરો →',
-    analyzing: 'વિશ્લેષણ થઈ રહ્યું છે...',
-    analysisComplete: 'વિશ્લેષણ પૂર્ણ',
-    retinalResults: 'રેટિનલ વિશ્લેષણ પરિણામો',
-    complete: '● પૂર્ણ',
-    original: 'મૂળ ફંડસ',
-    structural: 'માળખાકીય વિશ્લેષણ',
-    drGrade: 'DR ગ્રેડ',
-    confidence: 'વિશ્વાસ સ્તર',
-    riskScore: 'જોખમ સ્કોર',
-    vesselArea: 'રક્તવાહિની વિસ્તાર',
-    lesionFindings: 'લેઝન પરિણામો',
-    recommendation: 'ભલામણ',
-    quality: 'ઈમેજ ગુણવત્તા',
-    model: 'મોડેલ',
-    status: 'સ્થિતિ',
-    analysisDone: 'વિશ્લેષણ પૂર્ણ',
-    lesionModel: '4-ક્લાસ U-Net',
-    language: 'ભાષા',
-    noLesions: 'કોઈ લેઝન ક્લાસ મળ્યા નથી',
-    classLabel: 'લેઝન ક્લાસ',
-    pixels: 'પિક્સેલ',
-
+    appTitle: "EYEABETICS",
+    appSubtitle: "AI-સહાયિત ડાયાબેટિક રેટિનોપેથી સ્ક્રીનિંગ",
+    patientInformation: "દર્દીની માહિતી",
+    patientId: "દર્દી ID",
+    patientName: "દર્દીનું નામ",
+    age: "ઉંમર",
+    gender: "લિંગ",
+    phone: "ફોન",
+    village: "ગામ",
+    district: "જિલ્લો",
+    createPatient: "દર્દી બનાવો",
+    patientCreated: "દર્દી સફળતાપૂર્વક બનાવવામાં આવ્યો",
+    uploadTitle: "ફંડસ ઇમેજ અપલોડ કરો",
+    uploadDescription:
+      "AI-સહાયિત સ્ક્રીનિંગ માટે રેટિનલ ફંડસ ઇમેજ અપલોડ કરો.",
+    chooseImage: "ફંડસ ઇમેજ પસંદ કરો",
+    analyzeImage: "ઇમેજનું વિશ્લેષણ કરો",
+    analyzing: "વિશ્લેષણ થઈ રહ્યું છે...",
+    selectedImage: "પસંદ કરેલી ઇમેજ",
+    clinicalSummary: "5-સેકન્ડ ક્લિનિકલ સારાંશ",
+    drGrade: "DR ગ્રેડ",
+    severity: "તીવ્રતા",
+    imageQuality: "ઇમેજ ગુણવત્તા",
+    vesselArea: "રક્તવાહિની વિસ્તાર",
+    riskScore: "જોખમ સ્કોર",
+    referral: "રેફરલ",
+    noDr: "ડાયાબેટિક રેટિનોપેથી નથી",
+    mild: "હળવું",
+    moderate: "મધ્યમ",
+    severe: "ગંભીર",
+    proliferative: "પ્રોલિફેરેટિવ",
+    routine: "રૂટિન",
+    urgent: "તાત્કાલિક",
+    review: "ક્લિનિકલ સમીક્ષા",
+    patientPassport: "રેટિના પાસપોર્ટ",
+    screeningHistory: "સ્ક્રીનિંગ ઇતિહાસ",
+    screenings: "સ્ક્રીનિંગ",
+    currentScreening: "વર્તમાન સ્ક્રીનિંગ",
+    previousScreening: "પાછલી સ્ક્રીનિંગ",
+    noHistory: "કોઈ અગાઉની સ્ક્રીનિંગ ઉપલબ્ધ નથી.",
+    triageQueue: "ડૉક્ટર સમીક્ષા ક્યુ",
+    triageDescription:
+      "ક્લિનિકલ સમીક્ષા માટે AI-સહાયિત સ્ક્રીનિંગ પ્રાથમિકતા.",
+    viewCase: "કેસ જુઓ",
+    noTriageCases: "હાલ સમીક્ષા ક્યુમાં કોઈ કેસ નથી.",
+    visualEvidence: "દૃશ્ય પુરાવા",
+    originalFundus: "મૂળ ફંડસ",
+    structuralOverlay: "સ્ટ્રક્ચરલ વિશ્લેષણ",
+    aiEvidence: "AI Evidence Summary",
+    evidenceDisclaimer:
+      "આ પ્રોટોટાઇપ પાઇપલાઇનમાંથી મળેલો વર્ણનાત્મક પુરાવો છે; આ ન્યુરલ નેટવર્કના નિર્ણયનું કારણાત્મક સ્પષ્ટીકરણ નથી.",
+    lesionSegmentation: "લેશન સેગમેન્ટેશન",
+    vascularStructure: "રક્તવાહિની રચના",
+    classification: "DR તીવ્રતા વર્ગીકરણ",
+    progression: "રેટિનલ પ્રોગ્રેશન",
+    progressionDescription:
+      "દર્દીના વર્તમાન અને અગાઉના સ્ક્રીનિંગ રેકોર્ડની તુલના.",
+    previousGrade: "પાછલો ગ્રેડ",
+    currentGrade: "વર્તમાન ગ્રેડ",
+    gradeChange: "ગ્રેડ ફેરફાર",
+    progressionStatus: "પ્રોગ્રેશન સ્થિતિ",
+    progressionPriority: "પ્રાથમિકતા",
+    furtherDetails: "વધુ ક્લિનિકલ વિગતો",
+    technicalDetails: "તકનીકી વિગતો",
+    disclaimerTitle: "તબીબી અસ્વીકરણ",
     disclaimer:
-      'AI-સહાયિત સ્ક્રીનિંગ પ્રોટોટાઇપ. પરિણામોની લાયક નેત્ર નિષ્ણાત દ્વારા સમીક્ષા કરવી જોઈએ.',
-
-    footer:
-      'AI-સહાયિત રેટિનલ વિશ્લેષણ • સંશોધન પ્રોટોટાઇપ',
-
-    engineReady: 'MATLAB AI એન્જિન તૈયાર છે',
-
-    retinalIntelligence: 'રેટિનલ ઇન્ટેલિજન્સ',
-
-    heroTitle1: 'AI દ્વારા',
-    heroTitle2: 'આંખને સમજો.',
-
-    heroText:
-      'ફંડસ ઈમેજ અપલોડ કરો અને Eyeabetics પાઇપલાઇન દ્વારા ડાયાબિટિક રેટિનોપેથી, રેટિનલ લેઝન્સ અને રક્તવાહિનીની રચનાનું વિશ્લેષણ કરો.',
-
-    aiScreening: 'AI રેટિનલ સ્ક્રીનિંગ',
-
-    readyText:
-      'સંપૂર્ણ Eyeabetics AI વિશ્લેષણ પાઇપલાઇન માટે ઈમેજ તૈયાર છે.',
-
-    loadingDetails:
-      'DR વર્ગીકરણ, લેઝન સેગમેન્ટેશન, રક્તવાહિની સેગમેન્ટેશન અને જોખમ વિશ્લેષણ ચાલી રહ્યું છે.',
-
-    qualityWarning:
-      'વિશ્વસનીય વિશ્લેષણ માટે આ ઈમેજ યોગ્ય ન હોઈ શકે.',
-
-    noVisualization:
-      'કોઈ વિઝ્યુઅલાઇઝેશન ઉપલબ્ધ નથી',
-
-    clinicalReview:
-      'તબીબી નિષ્ણાતની સમીક્ષા કરવાની ભલામણ કરવામાં આવે છે.',
-
-    lowConfidence:
-      'ઓછું વિશ્વાસ સ્તર - માનવ નિષ્ણાતની સમીક્ષા જરૂરી',
-
-    grade0: '0 - DR નથી',
-    grade1: '1 - હળવું',
-    grade2: '2 - મધ્યમ',
-    grade3: '3 - ગંભીર',
-    grade4: '4 - પ્રોલિફેરેટિવ',
-
-    urgencyLow: 'ઓછું જોખમ',
-    urgencyModerate: 'મધ્યમ જોખમ',
-    urgencyHigh: 'ઉચ્ચ જોખમ',
-
-    referralRoutine:
-      'નિયમિત આંખની તપાસ કરવાની ભલામણ કરવામાં આવે છે.',
-
-    referral4Weeks:
-      '4 અઠવાડિયામાં નિષ્ણાતની સલાહ લો',
-
-    referralUrgent:
-      'તાત્કાલિક નેત્ર નિષ્ણાતની સમીક્ષા કરવાની ભલામણ કરવામાં આવે છે.',
-
-    errorAnalysis: 'વિશ્લેષણ નિષ્ફળ થયું'
+      "Eyeabetics એ AI-સહાયિત સંશોધન પ્રોટોટાઇપ છે અને વ્યાવસાયિક તબીબી નિદાનનો વિકલ્પ નથી.",
+    routineMonitoring:
+      "નિયમિત આંખની તપાસની ભલામણ કરવામાં આવે છે.",
+    moderateReferral:
+      "નેત્ર નિષ્ણાત દ્વારા મૂલ્યાંકનની ભલામણ કરવામાં આવે છે.",
+    urgentReferral:
+      "તાત્કાલિક નેત્ર નિષ્ણાત સમીક્ષાની ભલામણ કરવામાં આવે છે.",
+    uploadRequired: "કૃપા કરીને પહેલા ફંડસ ઇમેજ પસંદ કરો.",
+    patientRequired:
+      "વિશ્લેષણ પહેલાં Patient ID દાખલ કરો અથવા દર્દી બનાવો.",
   },
 
   Malayalam: {
-    analysisWorkspace: 'വിശകലന പ്രവർത്തനമേഖല',
-    fundusAnalysis: 'ഫണ്ടസ് ഇമേജ് വിശകലനം',
-    livePipeline: 'ലൈവ് പൈപ്പ്‌ലൈൻ',
-    uploadTitle: 'ഫണ്ടസ് ചിത്രം അപ്‌ലോഡ് ചെയ്യുക',
-    uploadText: 'JPG അല്ലെങ്കിൽ PNG റെറ്റിനൽ ചിത്രം',
-    chooseImage: 'ചിത്രം തിരഞ്ഞെടുക്കുക',
-    imageReady: 'ചിത്രം തയ്യാറാണ്',
-    analyze: 'റെറ്റിന വിശകലനം ചെയ്യുക →',
-    analyzing: 'വിശകലനം നടക്കുന്നു...',
-    analysisComplete: 'വിശകലനം പൂർത്തിയായി',
-    retinalResults: 'റെറ്റിനൽ വിശകലന ഫലങ്ങൾ',
-    complete: '● പൂർത്തിയായി',
-    original: 'യഥാർത്ഥ ഫണ്ടസ്',
-    structural: 'ഘടനാപരമായ വിശകലനം',
-    drGrade: 'DR ഗ്രേഡ്',
-    confidence: 'വിശ്വാസനില',
-    riskScore: 'റിസ്ക് സ്കോർ',
-    vesselArea: 'രക്തക്കുഴൽ വിസ്തീർണ്ണം',
-    lesionFindings: 'ലെഷൻ ഫലങ്ങൾ',
-    recommendation: 'ശുപാർശ',
-    quality: 'ചിത്ര ഗുണനിലവാരം',
-    model: 'മോഡൽ',
-    status: 'സ്ഥിതി',
-    analysisDone: 'വിശകലനം പൂർത്തിയായി',
-    lesionModel: '4-ക്ലാസ് U-Net',
-    language: 'ഭാഷ',
-    noLesions: 'ലെഷൻ ക്ലാസുകൾ കണ്ടെത്തിയില്ല',
-    classLabel: 'ലെഷൻ ക്ലാസ്',
-    pixels: 'പിക്സലുകൾ',
-
+    appTitle: "EYEABETICS",
+    appSubtitle: "AI സഹായത്തോടെയുള്ള ഡയബറ്റിക് റെറ്റിനോപ്പതി സ്ക്രീനിംഗ്",
+    patientInformation: "രോഗിയുടെ വിവരങ്ങൾ",
+    patientId: "രോഗി ID",
+    patientName: "രോഗിയുടെ പേര്",
+    age: "പ്രായം",
+    gender: "ലിംഗം",
+    phone: "ഫോൺ",
+    village: "ഗ്രാമം",
+    district: "ജില്ല",
+    createPatient: "രോഗിയെ സൃഷ്ടിക്കുക",
+    patientCreated: "രോഗി വിജയകരമായി സൃഷ്ടിച്ചു",
+    uploadTitle: "ഫണ്ടസ് ചിത്രം അപ്‌ലോഡ് ചെയ്യുക",
+    uploadDescription:
+      "AI സഹായത്തോടെയുള്ള സ്ക്രീനിംഗിനായി retinal fundus ചിത്രം അപ്‌ലോഡ് ചെയ്യുക.",
+    chooseImage: "ഫണ്ടസ് ചിത്രം തിരഞ്ഞെടുക്കുക",
+    analyzeImage: "ചിത്രം വിശകലനം ചെയ്യുക",
+    analyzing: "വിശകലനം നടക്കുന്നു...",
+    selectedImage: "തിരഞ്ഞെടുത്ത ചിത്രം",
+    clinicalSummary: "5-സെക്കൻഡ് ക്ലിനിക്കൽ സംഗ്രഹം",
+    drGrade: "DR ഗ്രേഡ്",
+    severity: "തീവ്രത",
+    imageQuality: "ചിത്ര ഗുണനിലവാരം",
+    vesselArea: "രക്തക്കുഴൽ വിസ്തീർണ്ണം",
+    riskScore: "റിസ്ക് സ്കോർ",
+    referral: "റഫറൽ",
+    noDr: "ഡയബറ്റിക് റെറ്റിനോപ്പതി ഇല്ല",
+    mild: "ലഘു",
+    moderate: "മിതമായ",
+    severe: "ഗുരുതരമായ",
+    proliferative: "പ്രൊലിഫറേറ്റീവ്",
+    routine: "റൂട്ടീൻ",
+    urgent: "അടിയന്തരം",
+    review: "ക്ലിനിക്കൽ റിവ്യൂ",
+    patientPassport: "റെറ്റിന പാസ്‌പോർട്ട്",
+    screeningHistory: "സ്ക്രീനിംഗ് ചരിത്രം",
+    screenings: "സ്ക്രീനിംഗുകൾ",
+    currentScreening: "നിലവിലെ സ്ക്രീനിംഗ്",
+    previousScreening: "മുൻ സ്ക്രീനിംഗ്",
+    noHistory: "മുൻ സ്ക്രീനിംഗ് ലഭ്യമല്ല.",
+    triageQueue: "ഡോക്ടർ റിവ്യൂ ക്യൂ",
+    triageDescription:
+      "ക്ലിനിക്കൽ റിവ്യൂവിനായി AI സഹായത്തോടെയുള്ള സ്ക്രീനിംഗ് മുൻഗണന.",
+    viewCase: "കേസ് കാണുക",
+    noTriageCases: "നിലവിൽ റിവ്യൂ ക്യൂവിൽ കേസുകളില്ല.",
+    visualEvidence: "ദൃശ്യ തെളിവുകൾ",
+    originalFundus: "യഥാർത്ഥ ഫണ്ടസ്",
+    structuralOverlay: "ഘടനാപരമായ വിശകലനം",
+    aiEvidence: "AI Evidence Summary",
+    evidenceDisclaimer:
+      "ഇത് prototype pipeline-ൽ നിന്നുള്ള വിവരണാത്മക തെളിവാണ്; neural-network തീരുമാനത്തിന്റെ കാരണപരമായ വിശദീകരണമല്ല.",
+    lesionSegmentation: "Lesion Segmentation",
+    vascularStructure: "Vascular Structure",
+    classification: "DR തീവ്രത വർഗ്ഗീകരണം",
+    progression: "റെറ്റിനൽ പ്രോഗ്രഷൻ",
+    progressionDescription:
+      "രോഗിയുടെ നിലവിലുള്ളതും മുൻപുള്ളതുമായ സ്ക്രീനിംഗ് രേഖകളുടെ താരതമ്യം.",
+    previousGrade: "മുൻ ഗ്രേഡ്",
+    currentGrade: "നിലവിലെ ഗ്രേഡ്",
+    gradeChange: "ഗ്രേഡ് മാറ്റം",
+    progressionStatus: "പ്രോഗ്രഷൻ നില",
+    progressionPriority: "മുൻഗണന",
+    furtherDetails: "കൂടുതൽ ക്ലിനിക്കൽ വിശദാംശങ്ങൾ",
+    technicalDetails: "സാങ്കേതിക വിശദാംശങ്ങൾ",
+    disclaimerTitle: "മെഡിക്കൽ ഡിസ്ക്ലെയിമർ",
     disclaimer:
-      'AI സഹായത്തോടെയുള്ള സ്ക്രീനിംഗ് പ്രോട്ടോടൈപ്പ്. ഫലങ്ങൾ യോഗ്യതയുള്ള നേത്രരോഗ വിദഗ്ധൻ പരിശോധിക്കണം.',
-
-    footer:
-      'AI സഹായത്തോടെയുള്ള റെറ്റിനൽ വിശകലനം • ഗവേഷണ പ്രോട്ടോടൈപ്പ്',
-
-    engineReady: 'MATLAB AI എഞ്ചിൻ തയ്യാറാണ്',
-
-    retinalIntelligence: 'റെറ്റിനൽ ഇന്റലിജൻസ്',
-
-    heroTitle1: 'AI വഴി',
-    heroTitle2: 'കണ്ണിനെ മനസ്സിലാക്കാം.',
-
-    heroText:
-      'ഫണ്ടസ് ചിത്രം അപ്‌ലോഡ് ചെയ്ത് Eyeabetics പൈപ്പ്‌ലൈൻ ഉപയോഗിച്ച് ഡയബറ്റിക് റെറ്റിനോപ്പതി, റെറ്റിനൽ ലെഷനുകൾ, രക്തക്കുഴൽ ഘടന എന്നിവ വിശകലനം ചെയ്യുക.',
-
-    aiScreening: 'AI റെറ്റിനൽ സ്ക്രീനിംഗ്',
-
-    readyText:
-      'പൂർണ്ണ Eyeabetics AI വിശകലന പൈപ്പ്‌ലൈനിലേക്ക് ചിത്രം തയ്യാറാണ്.',
-
-    loadingDetails:
-      'DR വർഗ്ഗീകരണം, ലെഷൻ സെഗ്മെന്റേഷൻ, രക്തക്കുഴൽ സെഗ്മെന്റേഷൻ, റിസ്ക് വിശകലനം എന്നിവ നടക്കുന്നു.',
-
-    qualityWarning:
-      'വിശ്വസനീയമായ വിശകലനത്തിന് ഈ ചിത്രം അനുയോജ്യമാകണമെന്നില്ല.',
-
-    noVisualization:
-      'വിഷ്വലൈസേഷൻ ലഭ്യമല്ല',
-
-    clinicalReview:
-      'മെഡിക്കൽ വിദഗ്ധന്റെ പരിശോധന ശുപാർശ ചെയ്യുന്നു.',
-
-    lowConfidence:
-      'കുറഞ്ഞ വിശ്വാസനില - മനുഷ്യ വിദഗ്ധന്റെ പരിശോധന ആവശ്യമാണ്',
-
-    grade0: '0 - DR ഇല്ല',
-    grade1: '1 - നേരിയ',
-    grade2: '2 - മിതമായ',
-    grade3: '3 - ഗുരുതര',
-    grade4: '4 - പ്രൊലിഫറേറ്റീവ്',
-
-    urgencyLow: 'കുറഞ്ഞ റിസ്ക്',
-    urgencyModerate: 'മിതമായ റിസ്ക്',
-    urgencyHigh: 'ഉയർന്ന റിസ്ക്',
-
-    referralRoutine:
-      'പതിവ് നേത്ര പരിശോധന ശുപാർശ ചെയ്യുന്നു.',
-
-    referral4Weeks:
-      '4 ആഴ്ചയ്ക്കുള്ളിൽ വിദഗ്ധനെ സമീപിക്കുക',
-
-    referralUrgent:
-      'അടിയന്തര നേത്ര വിദഗ്ധ പരിശോധന ശുപാർശ ചെയ്യുന്നു.',
-
-    errorAnalysis: 'വിശകലനം പരാജയപ്പെട്ടു'
+      "Eyeabetics ഒരു AI സഹായത്തോടെയുള്ള ഗവേഷണ പ്രോട്ടോടൈപ്പാണ്, പ്രൊഫഷണൽ മെഡിക്കൽ രോഗനിർണയത്തിന് പകരമല്ല.",
+    routineMonitoring:
+      "ക്രമമായ നേത്രപരിശോധന ശുപാർശ ചെയ്യുന്നു.",
+    moderateReferral:
+      "നേത്രരോഗ വിദഗ്ധന്റെ വിലയിരുത്തൽ ശുപാർശ ചെയ്യുന്നു.",
+    urgentReferral:
+      "അടിയന്തര നേത്രരോഗ വിദഗ്ധ പരിശോധന ശുപാർശ ചെയ്യുന്നു.",
+    uploadRequired: "ആദ്യം ഒരു ഫണ്ടസ് ചിത്രം തിരഞ്ഞെടുക്കുക.",
+    patientRequired:
+      "വിശകലനത്തിന് മുമ്പ് Patient ID നൽകുക അല്ലെങ്കിൽ രോഗിയെ സൃഷ്ടിക്കുക.",
   },
 
   Punjabi: {
-    analysisWorkspace: 'ਵਿਸ਼ਲੇਸ਼ਣ ਕਾਰਜ ਖੇਤਰ',
-    fundusAnalysis: 'ਫੰਡਸ ਚਿੱਤਰ ਵਿਸ਼ਲੇਸ਼ਣ',
-    livePipeline: 'ਲਾਈਵ ਪਾਈਪਲਾਈਨ',
-    uploadTitle: 'ਫੰਡਸ ਚਿੱਤਰ ਅਪਲੋਡ ਕਰੋ',
-    uploadText: 'JPG ਜਾਂ PNG ਰੈਟਿਨਲ ਚਿੱਤਰ',
-    chooseImage: 'ਚਿੱਤਰ ਚੁਣੋ',
-    imageReady: 'ਚਿੱਤਰ ਤਿਆਰ ਹੈ',
-    analyze: 'ਰੈਟਿਨਾ ਦਾ ਵਿਸ਼ਲੇਸ਼ਣ ਕਰੋ →',
-    analyzing: 'ਵਿਸ਼ਲੇਸ਼ਣ ਹੋ ਰਿਹਾ ਹੈ...',
-    analysisComplete: 'ਵਿਸ਼ਲੇਸ਼ਣ ਪੂਰਾ',
-    retinalResults: 'ਰੈਟਿਨਲ ਵਿਸ਼ਲੇਸ਼ਣ ਦੇ ਨਤੀਜੇ',
-    complete: '● ਪੂਰਾ',
-    original: 'ਮੂਲ ਫੰਡਸ',
-    structural: 'ਢਾਂਚਾਗਤ ਵਿਸ਼ਲੇਸ਼ਣ',
-    drGrade: 'DR ਗ੍ਰੇਡ',
-    confidence: 'ਭਰੋਸੇ ਦਾ ਪੱਧਰ',
-    riskScore: 'ਖਤਰੇ ਦਾ ਸਕੋਰ',
-    vesselArea: 'ਖੂਨ ਦੀਆਂ ਨਾੜੀਆਂ ਦਾ ਖੇਤਰ',
-    lesionFindings: 'ਲੇਜ਼ਨ ਨਤੀਜੇ',
-    recommendation: 'ਸਿਫਾਰਸ਼',
-    quality: 'ਚਿੱਤਰ ਦੀ ਗੁਣਵੱਤਾ',
-    model: 'ਮਾਡਲ',
-    status: 'ਸਥਿਤੀ',
-    analysisDone: 'ਵਿਸ਼ਲੇਸ਼ਣ ਪੂਰਾ',
-    lesionModel: '4-ਕਲਾਸ U-Net',
-    language: 'ਭਾਸ਼ਾ',
-    noLesions: 'ਕੋਈ ਲੇਜ਼ਨ ਕਲਾਸ ਨਹੀਂ ਮਿਲੀ',
-    classLabel: 'ਲੇਜ਼ਨ ਕਲਾਸ',
-    pixels: 'ਪਿਕਸਲ',
-
+    appTitle: "EYEABETICS",
+    appSubtitle: "AI-ਸਹਾਇਕ ਡਾਇਬੇਟਿਕ ਰੈਟੀਨੋਪੈਥੀ ਸਕ੍ਰੀਨਿੰਗ",
+    patientInformation: "ਮਰੀਜ਼ ਦੀ ਜਾਣਕਾਰੀ",
+    patientId: "ਮਰੀਜ਼ ID",
+    patientName: "ਮਰੀਜ਼ ਦਾ ਨਾਮ",
+    age: "ਉਮਰ",
+    gender: "ਲਿੰਗ",
+    phone: "ਫੋਨ",
+    village: "ਪਿੰਡ",
+    district: "ਜ਼ਿਲ੍ਹਾ",
+    createPatient: "ਮਰੀਜ਼ ਬਣਾਓ",
+    patientCreated: "ਮਰੀਜ਼ ਸਫਲਤਾਪੂਰਵਕ ਬਣਾਇਆ ਗਿਆ",
+    uploadTitle: "ਫੰਡਸ ਚਿੱਤਰ ਅਪਲੋਡ ਕਰੋ",
+    uploadDescription:
+      "AI-ਸਹਾਇਕ ਸਕ੍ਰੀਨਿੰਗ ਲਈ ਰੈਟਿਨਲ ਫੰਡਸ ਚਿੱਤਰ ਅਪਲੋਡ ਕਰੋ।",
+    chooseImage: "ਫੰਡਸ ਚਿੱਤਰ ਚੁਣੋ",
+    analyzeImage: "ਚਿੱਤਰ ਦਾ ਵਿਸ਼ਲੇਸ਼ਣ ਕਰੋ",
+    analyzing: "ਵਿਸ਼ਲੇਸ਼ਣ ਹੋ ਰਿਹਾ ਹੈ...",
+    selectedImage: "ਚੁਣਿਆ ਚਿੱਤਰ",
+    clinicalSummary: "5-ਸਕਿੰਟ ਕਲੀਨਿਕਲ ਸਾਰ",
+    drGrade: "DR ਗ੍ਰੇਡ",
+    severity: "ਗੰਭੀਰਤਾ",
+    imageQuality: "ਚਿੱਤਰ ਗੁਣਵੱਤਾ",
+    vesselArea: "ਖੂਨ ਦੀਆਂ ਨਾੜੀਆਂ ਦਾ ਖੇਤਰ",
+    riskScore: "ਜੋਖਮ ਸਕੋਰ",
+    referral: "ਰੈਫਰਲ",
+    noDr: "ਡਾਇਬੇਟਿਕ ਰੈਟੀਨੋਪੈਥੀ ਨਹੀਂ",
+    mild: "ਹਲਕਾ",
+    moderate: "ਮੱਧਮ",
+    severe: "ਗੰਭੀਰ",
+    proliferative: "ਪ੍ਰੋਲੀਫਰੇਟਿਵ",
+    routine: "ਰੂਟੀਨ",
+    urgent: "ਤੁਰੰਤ",
+    review: "ਕਲੀਨਿਕਲ ਸਮੀਖਿਆ",
+    patientPassport: "ਰੈਟੀਨਾ ਪਾਸਪੋਰਟ",
+    screeningHistory: "ਸਕ੍ਰੀਨਿੰਗ ਇਤਿਹਾਸ",
+    screenings: "ਸਕ੍ਰੀਨਿੰਗ",
+    currentScreening: "ਮੌਜੂਦਾ ਸਕ੍ਰੀਨਿੰਗ",
+    previousScreening: "ਪਿਛਲੀ ਸਕ੍ਰੀਨਿੰਗ",
+    noHistory: "ਕੋਈ ਪਿਛਲੀ ਸਕ੍ਰੀਨਿੰਗ ਉਪਲਬਧ ਨਹੀਂ।",
+    triageQueue: "ਡਾਕਟਰ ਸਮੀਖਿਆ ਕਤਾਰ",
+    triageDescription:
+      "ਕਲੀਨਿਕਲ ਸਮੀਖਿਆ ਲਈ AI-ਸਹਾਇਕ ਸਕ੍ਰੀਨਿੰਗ ਤਰਜੀਹ।",
+    viewCase: "ਕੇਸ ਵੇਖੋ",
+    noTriageCases: "ਇਸ ਵੇਲੇ ਸਮੀਖਿਆ ਕਤਾਰ ਵਿੱਚ ਕੋਈ ਕੇਸ ਨਹੀਂ ਹੈ।",
+    visualEvidence: "ਦ੍ਰਿਸ਼ਟੀਗਤ ਸਬੂਤ",
+    originalFundus: "ਅਸਲ ਫੰਡਸ",
+    structuralOverlay: "ਸੰਰਚਨਾਤਮਕ ਵਿਸ਼ਲੇਸ਼ਣ",
+    aiEvidence: "AI Evidence Summary",
+    evidenceDisclaimer:
+      "ਇਹ ਪ੍ਰੋਟੋਟਾਈਪ ਪਾਈਪਲਾਈਨ ਤੋਂ ਪ੍ਰਾਪਤ ਵਰਣਨਾਤਮਕ ਸਬੂਤ ਹੈ; ਇਹ ਨਿਊਰਲ ਨੈੱਟਵਰਕ ਦੇ ਫੈਸਲੇ ਦੀ ਕਾਰਣਾਤਮਕ ਵਿਆਖਿਆ ਨਹੀਂ ਹੈ।",
+    lesionSegmentation: "ਲੇਜ਼ਨ ਸੈਗਮੈਂਟੇਸ਼ਨ",
+    vascularStructure: "ਵੈਸਕੁਲਰ ਢਾਂਚਾ",
+    classification: "DR ਗੰਭੀਰਤਾ ਵਰਗੀਕਰਨ",
+    progression: "ਰੈਟੀਨਲ ਪ੍ਰਗਤੀ",
+    progressionDescription:
+      "ਮਰੀਜ਼ ਦੇ ਮੌਜੂਦਾ ਅਤੇ ਪਿਛਲੇ ਸਕ੍ਰੀਨਿੰਗ ਰਿਕਾਰਡ ਦੀ ਤੁਲਨਾ।",
+    previousGrade: "ਪਿਛਲਾ ਗ੍ਰੇਡ",
+    currentGrade: "ਮੌਜੂਦਾ ਗ੍ਰੇਡ",
+    gradeChange: "ਗ੍ਰੇਡ ਬਦਲਾਅ",
+    progressionStatus: "ਪ੍ਰਗਤੀ ਸਥਿਤੀ",
+    progressionPriority: "ਤਰਜੀਹ",
+    furtherDetails: "ਹੋਰ ਕਲੀਨਿਕਲ ਵੇਰਵੇ",
+    technicalDetails: "ਤਕਨੀਕੀ ਵੇਰਵੇ",
+    disclaimerTitle: "ਮੈਡੀਕਲ ਡਿਸਕਲੇਮਰ",
     disclaimer:
-      'AI-ਸਹਾਇਤਾ ਪ੍ਰਾਪਤ ਸਕ੍ਰੀਨਿੰਗ ਪ੍ਰੋਟੋਟਾਈਪ। ਨਤੀਜਿਆਂ ਦੀ ਯੋਗ ਨੇਤਰ ਵਿਸ਼ੇਸ਼ਗਿਆਰ ਦੁਆਰਾ ਸਮੀਖਿਆ ਕੀਤੀ ਜਾਣੀ ਚਾਹੀਦੀ ਹੈ।',
+      "Eyeabetics ਇੱਕ AI-ਸਹਾਇਕ ਖੋਜ ਪ੍ਰੋਟੋਟਾਈਪ ਹੈ ਅਤੇ ਪੇਸ਼ੇਵਰ ਮੈਡੀਕਲ ਨਿਦਾਨ ਦਾ ਬਦਲ ਨਹੀਂ ਹੈ।",
+    routineMonitoring:
+      "ਨਿਯਮਿਤ ਅੱਖਾਂ ਦੀ ਜਾਂਚ ਦੀ ਸਿਫਾਰਸ਼ ਕੀਤੀ ਜਾਂਦੀ ਹੈ।",
+    moderateReferral:
+      "ਅੱਖਾਂ ਦੇ ਮਾਹਰ ਦੁਆਰਾ ਮੁਲਾਂਕਣ ਦੀ ਸਿਫਾਰਸ਼ ਕੀਤੀ ਜਾਂਦੀ ਹੈ।",
+    urgentReferral:
+      "ਤੁਰੰਤ ਅੱਖਾਂ ਦੇ ਮਾਹਰ ਦੀ ਸਮੀਖਿਆ ਦੀ ਸਿਫਾਰਸ਼ ਕੀਤੀ ਜਾਂਦੀ ਹੈ।",
+    uploadRequired: "ਕਿਰਪਾ ਕਰਕੇ ਪਹਿਲਾਂ ਫੰਡਸ ਚਿੱਤਰ ਚੁਣੋ।",
+    patientRequired:
+      "ਵਿਸ਼ਲੇਸ਼ਣ ਤੋਂ ਪਹਿਲਾਂ Patient ID ਦਿਓ ਜਾਂ ਮਰੀਜ਼ ਬਣਾਓ।",
+  },
+};
 
-    footer:
-      'AI-ਸਹਾਇਤਾ ਪ੍ਰਾਪਤ ਰੈਟਿਨਲ ਵਿਸ਼ਲੇਸ਼ਣ • ਖੋਜ ਪ੍ਰੋਟੋਟਾਈਪ',
 
-    engineReady: 'MATLAB AI ਇੰਜਣ ਤਿਆਰ ਹੈ',
+// ============================================================
+// HELPERS
+// ============================================================
 
-    retinalIntelligence: 'ਰੈਟਿਨਲ ਇੰਟੈਲੀਜੈਂਸ',
+function getText(language, key) {
 
-    heroTitle1: 'AI ਰਾਹੀਂ',
-    heroTitle2: 'ਅੱਖ ਨੂੰ ਸਮਝੋ।',
-
-    heroText:
-      'ਫੰਡਸ ਚਿੱਤਰ ਅਪਲੋਡ ਕਰੋ ਅਤੇ Eyeabetics ਪਾਈਪਲਾਈਨ ਰਾਹੀਂ ਡਾਇਬੈਟਿਕ ਰੈਟਿਨੋਪੈਥੀ, ਰੈਟਿਨਲ ਲੇਜ਼ਨ ਅਤੇ ਖੂਨ ਦੀਆਂ ਨਾੜੀਆਂ ਦੀ ਬਣਤਰ ਦਾ ਵਿਸ਼ਲੇਸ਼ਣ ਕਰੋ।',
-
-    aiScreening: 'AI ਰੈਟਿਨਲ ਸਕ੍ਰੀਨਿੰਗ',
-
-    readyText:
-      'ਪੂਰੀ Eyeabetics AI ਵਿਸ਼ਲੇਸ਼ਣ ਪਾਈਪਲਾਈਨ ਲਈ ਚਿੱਤਰ ਤਿਆਰ ਹੈ।',
-
-    loadingDetails:
-      'DR ਵਰਗੀਕਰਨ, ਲੇਜ਼ਨ ਸੈਗਮੈਂਟੇਸ਼ਨ, ਖੂਨ ਦੀਆਂ ਨਾੜੀਆਂ ਦੀ ਸੈਗਮੈਂਟੇਸ਼ਨ ਅਤੇ ਖਤਰੇ ਦਾ ਵਿਸ਼ਲੇਸ਼ਣ ਚੱਲ ਰਿਹਾ ਹੈ।',
-
-    qualityWarning:
-      'ਭਰੋਸੇਯੋਗ ਵਿਸ਼ਲੇਸ਼ਣ ਲਈ ਇਹ ਚਿੱਤਰ ਢੁਕਵਾਂ ਨਹੀਂ ਹੋ ਸਕਦਾ।',
-
-    noVisualization:
-      'ਕੋਈ ਵਿਜ਼ੂਅਲਾਈਜ਼ੇਸ਼ਨ ਉਪਲਬਧ ਨਹੀਂ',
-
-    clinicalReview:
-      'ਡਾਕਟਰੀ ਮਾਹਿਰ ਦੁਆਰਾ ਸਮੀਖਿਆ ਦੀ ਸਿਫਾਰਸ਼ ਕੀਤੀ ਜਾਂਦੀ ਹੈ।',
-
-    lowConfidence:
-      'ਘੱਟ ਭਰੋਸੇ ਦਾ ਪੱਧਰ - ਮਨੁੱਖੀ ਮਾਹਿਰ ਦੀ ਸਮੀਖਿਆ ਜ਼ਰੂਰੀ ਹੈ',
-
-    grade0: '0 - DR ਨਹੀਂ',
-    grade1: '1 - ਹਲਕਾ',
-    grade2: '2 - ਦਰਮਿਆਨਾ',
-    grade3: '3 - ਗੰਭੀਰ',
-    grade4: '4 - ਪ੍ਰੋਲੀਫਰੇਟਿਵ',
-
-    urgencyLow: 'ਘੱਟ ਖਤਰਾ',
-    urgencyModerate: 'ਦਰਮਿਆਨਾ ਖਤਰਾ',
-    urgencyHigh: 'ਉੱਚ ਖਤਰਾ',
-
-    referralRoutine:
-      'ਨਿਯਮਿਤ ਅੱਖਾਂ ਦੀ ਜਾਂਚ ਦੀ ਸਿਫਾਰਸ਼ ਕੀਤੀ ਜਾਂਦੀ ਹੈ।',
-
-    referral4Weeks:
-      '4 ਹਫ਼ਤਿਆਂ ਦੇ ਅੰਦਰ ਮਾਹਿਰ ਨਾਲ ਸੰਪਰਕ ਕਰੋ',
-
-    referralUrgent:
-      'ਤੁਰੰਤ ਨੇਤਰ ਵਿਸ਼ੇਸ਼ਗਿਆਰ ਦੀ ਸਮੀਖਿਆ ਦੀ ਸਿਫਾਰਸ਼ ਕੀਤੀ ਜਾਂਦੀ ਹੈ।',
-
-    errorAnalysis: 'ਵਿਸ਼ਲੇਸ਼ਣ ਅਸਫਲ ਹੋਇਆ'
-  }
+  return (
+    translations[language]?.[key] ||
+    translations.English[key] ||
+    key
+  );
 }
 
 
-function App() {
-  const [image, setImage] = useState(null)
-  const [preview, setPreview] = useState(null)
-  const [result, setResult] = useState(null)
-  const [loading, setLoading] = useState(false)
-  const [error, setError] = useState('')
-  const [language, setLanguage] = useState('English')
+function numberOrNull(value) {
 
-  const t = translations[language]
+  const n =
+    Number(value);
 
-  const handleImage = (e) => {
-    const file = e.target.files?.[0]
-
-    if (!file) return
-
-    setImage(file)
-    setPreview(URL.createObjectURL(file))
-    setResult(null)
-    setError('')
-  }
+  return Number.isFinite(n)
+    ? n
+    : null;
+}
 
 
-  const analyzeImage = async () => {
-    if (!image) return
+function getGradeLabel(
+  grade,
+  language = "English"
+) {
 
-    setLoading(true)
-    setError('')
-    setResult(null)
+  const g =
+    numberOrNull(grade);
 
-    try {
-      const reader = new FileReader()
+  const labels = {
 
-      reader.onload = async () => {
-        try {
-          const response = await fetch(
-            'http://localhost:5000/api/analyze',
-            {
-              method: 'POST',
-              headers: {
-                'Content-Type': 'application/json',
-              },
-              body: JSON.stringify({
-                image: reader.result,
-              }),
-            }
-          )
+    0:
+      getText(language, "noDr"),
 
-          const data = await response.json()
+    1:
+      getText(language, "mild"),
 
-          if (!response.ok) {
-            throw new Error(data.error || t.errorAnalysis)
-          }
+    2:
+      getText(language, "moderate"),
 
-          setResult(data)
+    3:
+      getText(language, "severe"),
 
-        } catch (err) {
-          setError(err.message)
-        } finally {
-          setLoading(false)
-        }
-      }
-
-      reader.readAsDataURL(image)
-
-    } catch (err) {
-      setError(err.message)
-      setLoading(false)
-    }
-  }
-
-
-  const getGradeLabel = (grade) => {
-    const labels = [
-      t.grade0,
-      t.grade1,
-      t.grade2,
-      t.grade3,
-      t.grade4
-    ]
-
-    const n = Number(grade)
-
-    return Number.isInteger(n) && n >= 0 && n <= 4
-      ? labels[n]
-      : 'N/A'
-  }
-
-
-  const getUrgencyLabel = (urgency) => {
-    const value = String(urgency || '').toLowerCase()
-
-    if (value.includes('high')) {
-      return t.urgencyHigh
-    }
-
-    if (value.includes('moderate')) {
-      return t.urgencyModerate
-    }
-
-    if (value.includes('low')) {
-      return t.urgencyLow
-    }
-
-    return ''
-  }
-
-
-  const getReferralText = () => {
-    const urgency = String(
-      result?.referral?.urgency || ''
-    ).toLowerCase()
-
-    if (urgency.includes('high')) {
-      return t.referralUrgent
-    }
-
-    if (urgency.includes('moderate')) {
-      return t.referral4Weeks
-    }
-
-    if (urgency.includes('low')) {
-      return t.referralRoutine
-    }
-
-    return (
-      result?.referral?.timeframe ||
-      result?.referral?.message ||
-      t.clinicalReview
-    )
-  }
-
-
-  const getLesionEntries = () => {
-    if (!result?.lesionCounts) return []
-
-    return Object.entries(result.lesionCounts).filter(
-      ([key]) =>
-        key.toLowerCase() !== 'background' &&
-        key.toLowerCase() !== 'class1'
-    )
-  }
-
-
-  const getLesionName = (name) => {
-    const value = String(name).toLowerCase()
-
-    if (value.includes('class2')) {
-      return language === 'English'
-        ? 'Exudative / Lesion Class 2'
-        : `${t.classLabel} 2`
-    }
-
-    if (value.includes('class3')) {
-      return language === 'English'
-        ? 'Hemorrhagic / Lesion Class 3'
-        : `${t.classLabel} 3`
-    }
-
-    if (value.includes('class4')) {
-      return language === 'English'
-        ? 'Lesion Class 4'
-        : `${t.classLabel} 4`
-    }
-
-    return `${t.classLabel} ${name.replace(/class/i, '')}`
-  }
-
-
-  /*
-   * IMPORTANT:
-   * MATLAB returns riskScoreAdjusted.
-   * Older frontend code expected result.riskScore.
-   * This helper supports both so the UI never shows N/A
-   * when MATLAB has actually calculated a risk score.
-   */
-  const getRiskScore = () => {
-    if (result?.riskScoreAdjusted !== undefined) {
-      return Number(result.riskScoreAdjusted)
-    }
-
-    if (result?.riskScore !== undefined) {
-      return Number(result.riskScore)
-    }
-
-    return null
-  }
-
-
-  const riskScore = getRiskScore()
-
-
-  const getConfidence = () => {
-    if (typeof result?.confidence === 'number') {
-      return result.confidence
-    }
-
-    if (typeof result?.drConfidence === 'number') {
-      return result.drConfidence
-    }
-
-    return null
-  }
-
-
-  const confidence = getConfidence()
-
+    4:
+      getText(language, "proliferative"),
+  };
 
   return (
-    <div className="app">
+    labels[g] ||
+    "Unknown"
+  );
+}
 
-      <header className="navbar">
+
+function getSeverityClass(
+  grade
+) {
+
+  const g =
+    numberOrNull(grade);
+
+  if (g >= 4)
+    return "critical";
+
+  if (g === 3)
+    return "high";
+
+  if (g === 2)
+    return "moderate";
+
+  return "routine";
+}
+
+
+function getReferralText(
+  grade,
+  language = "English"
+) {
+
+  const g =
+    numberOrNull(grade);
+
+  if (g >= 3) {
+
+    return getText(
+      language,
+      "urgentReferral"
+    );
+  }
+
+  if (g === 2) {
+
+    return getText(
+      language,
+      "moderateReferral"
+    );
+  }
+
+  return getText(
+    language,
+    "routineMonitoring"
+  );
+}
+function createOfflineReferral(
+  result,
+  patientName,
+  patientId
+) {
+  if (!result) return null;
+
+  const grade = Number(
+    result.drGrade ?? result.grade ?? 0
+  );
+
+  const severity =
+    result.drLabel ||
+    getGradeLabel(grade, "English");
+
+  const urgency =
+    grade >= 3
+      ? "URGENT"
+      : grade === 2
+      ? "MODERATE"
+      : "ROUTINE";
+
+  const message =
+    `EYEABETICS REFERRAL\n\n` +
+    `Patient: ${patientName || "Patient"}\n` +
+    `Patient ID: ${patientId || "N/A"}\n` +
+    `DR Grade: ${grade}\n` +
+    `Severity: ${severity}\n` +
+    `Priority: ${urgency}\n\n` +
+    `AI-assisted screening prototype. Clinical review required.`;
+
+  return {
+    id: `WA-${Date.now()}`,
+    patientName: patientName || "Patient",
+    patientId: patientId || "N/A",
+    grade,
+    severity,
+    urgency,
+    message,
+    status: "QUEUED OFFLINE",
+    createdAt: new Date().toISOString(),
+  };
+}
+
+
+function getUrgencyLabel(
+  priority,
+  language = "English"
+) {
+
+  const p =
+    String(
+      priority || ""
+    ).toUpperCase();
+
+  if (
+    p === "CRITICAL" ||
+    p === "HIGH" ||
+    p === "URGENT"
+  ) {
+
+    return getText(
+      language,
+      "urgent"
+    );
+  }
+
+  if (
+    p === "MODERATE"
+  ) {
+
+    return getText(
+      language,
+      "review"
+    );
+  }
+
+  return getText(
+    language,
+    "routine"
+  );
+}
+
+
+function getLesionEntries(
+  lesionCounts
+) {
+
+  if (
+    !lesionCounts ||
+    typeof lesionCounts !== "object"
+  ) {
+
+    return [];
+  }
+
+  return Object.entries(
+    lesionCounts
+  )
+    .filter(
+      ([key, value]) => {
+
+        const k =
+          String(key)
+            .toLowerCase();
+
+        return (
+          k !== "background" &&
+          k !== "class1" &&
+          numberOrNull(value) !== null
+        );
+      }
+    )
+    .map(
+      ([key, value]) => ({
+
+        className:
+          String(key),
+
+        pixels:
+          Number(value),
+      })
+    )
+    .sort(
+      (a, b) =>
+        b.pixels -
+        a.pixels
+    );
+}
+
+
+function getLesionName(
+  className
+) {
+
+  const name =
+    String(className)
+      .toLowerCase();
+
+  if (
+    name.includes("class")
+  ) {
+
+    return String(
+      className
+    );
+  }
+
+  return `Lesion ${className}`;
+}
+
+
+function getRiskScore(
+  result
+) {
+
+  return numberOrNull(
+    result?.riskScoreAdjusted ??
+    result?.riskScore
+  );
+}
+
+
+function formatReportDate(
+  value
+) {
+
+  if (!value)
+    return "N/A";
+
+  const date =
+    new Date(value);
+
+  if (
+    Number.isNaN(
+      date.getTime()
+    )
+  ) {
+
+    return "N/A";
+  }
+
+  return date.toLocaleString();
+}
+
+
+function getCurrentGrade(
+  progression,
+  result
+) {
+
+  if (
+    progression?.available &&
+    progression?.current
+  ) {
+
+    return numberOrNull(
+      progression.current.drGrade
+    );
+  }
+
+  return numberOrNull(
+    result?.drGrade ??
+    result?.grade
+  );
+}
+
+
+function getProgressionClass(
+  progression
+) {
+
+  const level =
+    String(
+      progression?.progression?.level ||
+      ""
+    ).toLowerCase();
+
+  if (
+    level === "critical"
+  )
+    return "critical";
+
+  if (
+    level === "high"
+  )
+    return "high";
+
+  if (
+    level === "moderate"
+  )
+    return "moderate";
+
+  return "routine";
+}
+
+
+function getImageUrl(
+  fileOrUrl
+) {
+
+  if (!fileOrUrl)
+    return null;
+
+  if (
+    String(fileOrUrl)
+      .startsWith("data:")
+  ) {
+
+    return fileOrUrl;
+  }
+
+  if (
+    String(fileOrUrl)
+      .startsWith("http://") ||
+    String(fileOrUrl)
+      .startsWith("https://")
+  ) {
+
+    return fileOrUrl;
+  }
+
+  const name =
+    String(fileOrUrl)
+      .split(/[\\/]/)
+      .pop();
+
+  return `${API}/api/uploads/${encodeURIComponent(name)}`;
+}
+
+
+// ============================================================
+// APP
+// ============================================================
+
+function App() {
+
+  const [language, setLanguage] =
+    useState("English");
+
+  const [patientId, setPatientId] =
+    useState("");
+
+  const [patientName, setPatientName] =
+    useState("");
+   
+  const [showDemoAbha, setShowDemoAbha] = useState(false)
+
+  const [offlineReferral, setOfflineReferral] = useState(null)
+  
+  const [age, setAge] =
+    useState("");
+
+  const [gender, setGender] =
+    useState("");
+
+  const [phone, setPhone] =
+    useState("");
+
+  const [village, setVillage] =
+    useState("");
+
+  const [district, setDistrict] =
+    useState("");
+
+
+  const [image, setImage] =
+    useState(null);
+
+  const [preview, setPreview] =
+    useState(null);
+
+  const [result, setResult] =
+    useState(null);
+
+  const [loading, setLoading] =
+    useState(false);
+
+  const [error, setError] =
+    useState("");
+
+
+  const [passportPatient, setPassportPatient] =
+    useState(null);
+
+  const [progression, setProgression] =
+    useState(null);
+
+  const [progressionLoading, setProgressionLoading] =
+    useState(false);
+
+  const [screenings, setScreenings] =
+    useState([]);
+
+
+  const [triage, setTriage] =
+    useState(null);
+
+  const [triageLoading, setTriageLoading] =
+    useState(false);
+
+  const [triageError, setTriageError] =
+    useState("");
+
+  const [selectedTriageCase, setSelectedTriageCase] =
+    useState(null);
+
+
+  const [patientMessage, setPatientMessage] =
+    useState("");
+
+  const [showDetails, setShowDetails] =
+    useState(false);
+
+  const [showTechnical, setShowTechnical] =
+    useState(false);
+
+
+  const t =
+    (key) =>
+      getText(
+        language,
+        key
+      );
+
+
+  // ==========================================================
+  // LOAD TRIAGE
+  // ==========================================================
+
+  const fetchTriageQueue =
+    async () => {
+
+      setTriageLoading(
+        true
+      );
+
+      setTriageError(
+        ""
+      );
+
+      try {
+
+        const response =
+          await fetch(
+            `${API}/api/triage`
+          );
+
+        if (!response.ok) {
+
+          throw new Error(
+            "Unable to load triage queue."
+          );
+        }
+
+        const data =
+          await response.json();
+
+        setTriage(
+          data
+        );
+
+      } catch (err) {
+
+        console.error(
+          err
+        );
+
+        setTriageError(
+          err.message
+        );
+
+      } finally {
+
+        setTriageLoading(
+          false
+        );
+      }
+    };
+
+
+  // ==========================================================
+  // INITIAL LOAD
+  // ==========================================================
+
+  useEffect(
+    () => {
+
+      fetchTriageQueue();
+
+    },
+    []
+  );
+
+
+  // ==========================================================
+  // LOAD PATIENT
+  // ==========================================================
+
+  const loadPatientData =
+    async (
+      id
+    ) => {
+
+      if (!id)
+        return;
+
+      try {
+
+        const patientResponse =
+          await fetch(
+            `${API}/api/patients/${encodeURIComponent(id)}`
+          );
+
+        if (
+          patientResponse.ok
+        ) {
+
+          const patientData =
+            await patientResponse.json();
+
+          if (
+            patientData.patient
+          ) {
+
+            setPassportPatient(
+              patientData.patient
+            );
+
+            setPatientName(
+              patientData.patient.name ||
+              ""
+            );
+
+            setAge(
+              patientData.patient.age ??
+              ""
+            );
+
+            setGender(
+              patientData.patient.gender ||
+              ""
+            );
+
+            setPhone(
+              patientData.patient.phone ||
+              ""
+            );
+
+            setVillage(
+              patientData.patient.village ||
+              ""
+            );
+
+            setDistrict(
+              patientData.patient.district ||
+              ""
+            );
+          }
+        }
+
+
+        await loadScreeningHistory(
+          id
+        );
+
+      } catch (err) {
+
+        console.error(
+          "Patient loading error:",
+          err
+        );
+      }
+    };
+
+
+  // ==========================================================
+  // LOAD SCREENING HISTORY
+  // ==========================================================
+
+  const loadScreeningHistory =
+    async (
+      id
+    ) => {
+
+      if (!id)
+        return;
+
+      try {
+
+        const response =
+          await fetch(
+            `${API}/api/patients/${encodeURIComponent(id)}/screenings`
+          );
+
+        if (
+          !response.ok
+        ) {
+
+          return;
+        }
+
+        const data =
+          await response.json();
+
+        setScreenings(
+          data.screenings ||
+          []
+        );
+
+      } catch (err) {
+
+        console.error(
+          "Screening history error:",
+          err
+        );
+      }
+    };
+
+
+  // ==========================================================
+  // LOAD PROGRESSION
+  // ==========================================================
+
+  const loadProgression =
+    async (
+      id
+    ) => {
+
+      if (!id) {
+
+        setProgression(
+          null
+        );
+
+        return;
+      }
+
+      setProgressionLoading(
+        true
+      );
+
+      try {
+
+        const response =
+          await fetch(
+            `${API}/api/patients/${encodeURIComponent(id)}/progression`
+          );
+
+        if (
+          !response.ok
+        ) {
+
+          setProgression(
+            null
+          );
+
+          return;
+        }
+
+        const data =
+          await response.json();
+
+        setProgression(
+          data.progression ||
+          null
+        );
+
+      } catch (err) {
+
+        console.error(
+          "Progression error:",
+          err
+        );
+
+        setProgression(
+          null
+        );
+
+      } finally {
+
+        setProgressionLoading(
+          false
+        );
+      }
+    };
+
+
+  // ==========================================================
+  // TRIAGE CASE SELECTION
+  // ==========================================================
+
+  const handleTriageCase =
+    async (
+      caseItem
+    ) => {
+
+      if (!caseItem?.patientId)
+        return;
+
+      setError("");
+
+      setSelectedTriageCase(
+        caseItem
+      );
+
+      setPatientId(
+        caseItem.patientId
+      );
+
+
+      try {
+
+        // ------------------------------------------------------
+        // Patient
+        // ------------------------------------------------------
+
+        const patientResponse =
+          await fetch(
+            `${API}/api/patients/${encodeURIComponent(caseItem.patientId)}`
+          );
+
+        if (
+          patientResponse.ok
+        ) {
+
+          const patientData =
+            await patientResponse.json();
+
+          if (
+            patientData.patient
+          ) {
+
+            setPassportPatient(
+              patientData.patient
+            );
+
+            setPatientName(
+              patientData.patient.name ||
+              ""
+            );
+
+            setAge(
+              patientData.patient.age ??
+              ""
+            );
+
+            setGender(
+              patientData.patient.gender ||
+              ""
+            );
+
+            setPhone(
+              patientData.patient.phone ||
+              ""
+            );
+
+            setVillage(
+              patientData.patient.village ||
+              ""
+            );
+
+            setDistrict(
+              patientData.patient.district ||
+              ""
+            );
+          }
+        }
+
+
+        // ------------------------------------------------------
+        // Selected screening
+        // ------------------------------------------------------
+
+        if (
+          caseItem.screeningId
+        ) {
+
+          const screeningResponse =
+            await fetch(
+              `${API}/api/screenings/${caseItem.screeningId}`
+            );
+
+          if (
+            screeningResponse.ok
+          ) {
+
+            const screeningData =
+              await screeningResponse.json();
+
+            if (
+              screeningData.screening
+            ) {
+
+              const screening =
+                screeningData.screening;
+
+              setResult({
+
+                ...screening,
+
+                drGrade:
+                  screening.drGrade,
+
+                drLabel:
+                  screening.drLabel,
+
+                vesselPercentage:
+                  screening.vesselPercentage,
+
+                lesionCounts:
+                  screening.lesionFindings,
+
+                isGradeable:
+                  screening.imageQuality?.isGradeable,
+
+                qualityScore:
+                  screening.imageQuality?.qualityScore,
+
+                qualityMessage:
+                  screening.imageQuality?.qualityMessage,
+
+                riskScore:
+                  screening.riskScore,
+
+                referral:
+                  screening.referral,
+
+                overlayPath:
+                  screening.structuralOverlay,
+
+                overlayUrl:
+                  screening.overlayUrl,
+
+                imageUrl:
+                  screening.imageUrl,
+
+                evidence:
+                  screening.evidence,
+              });
+
+
+              // ------------------------------------------------
+              // Use server-provided image URL
+              // ------------------------------------------------
+
+              const imageUrl =
+                screening.imageUrl ||
+                getImageUrl(
+                  screening.imageName
+                );
+
+              setPreview(
+                imageUrl
+              );
+            }
+          }
+        }
+
+
+        await loadScreeningHistory(
+          caseItem.patientId
+        );
+
+        await loadProgression(
+          caseItem.patientId
+        );
+
+
+        window.scrollTo({
+          top: 0,
+          behavior: "smooth",
+        });
+
+      } catch (err) {
+
+        console.error(
+          "Triage case error:",
+          err
+        );
+
+        setError(
+          "Unable to load the selected case."
+        );
+      }
+    };
+
+
+  // ==========================================================
+  // IMAGE HANDLER
+  // ==========================================================
+
+  const handleImage =
+    (
+      event
+    ) => {
+
+      const file =
+        event.target.files?.[0];
+
+      if (!file)
+        return;
+
+      setImage(
+        file
+      );
+
+      setPreview(
+        URL.createObjectURL(
+          file
+        )
+      );
+
+      setResult(
+        null
+      );
+
+      setProgression(
+        null
+      );
+
+      setSelectedTriageCase(
+        null
+      );
+
+      setError(
+        ""
+      );
+
+      setPatientMessage(
+        ""
+      );
+    };
+
+
+  // ==========================================================
+  // CREATE PATIENT
+  // ==========================================================
+
+  const createPatient =
+    async () => {
+
+      setPatientMessage(
+        ""
+      );
+
+      setError(
+        ""
+      );
+
+
+      if (!patientName.trim()) {
+
+        setError(
+          "Patient name is required."
+        );
+
+        return;
+      }
+
+
+      try {
+
+        const response =
+          await fetch(
+            `${API}/api/patients`,
+            {
+              method:
+                "POST",
+
+              headers: {
+                "Content-Type":
+                  "application/json",
+              },
+
+              body:
+                JSON.stringify({
+
+                  patientId:
+                    patientId.trim() ||
+                    undefined,
+
+                  name:
+                    patientName.trim(),
+
+                  age:
+                    age === ""
+                      ? undefined
+                      : Number(age),
+
+                  gender,
+
+                  phone,
+
+                  village,
+
+                  district,
+                }),
+            }
+          );
+
+
+        const data =
+          await response.json();
+
+
+        if (
+          !response.ok
+        ) {
+
+          throw new Error(
+            data.error ||
+            "Could not create patient."
+          );
+        }
+
+
+        setPatientId(
+          data.patient.patientId
+        );
+
+        setPassportPatient(
+          data.patient
+        );
+
+        setPatientMessage(
+          t("patientCreated")
+        );
+
+      } catch (err) {
+
+        console.error(
+          err
+        );
+
+        setError(
+          err.message
+        );
+      }
+    };
+
+
+  // ==========================================================
+  // ANALYZE IMAGE
+  // ==========================================================
+
+  const analyzeImage =
+    async () => {
+
+      setError(
+        ""
+      );
+
+      setPatientMessage(
+        ""
+      );
+
+
+      if (!image) {
+
+        setError(
+          t("uploadRequired")
+        );
+
+        return;
+      }
+
+
+      if (!patientId.trim()) {
+
+        setError(
+          t("patientRequired")
+        );
+
+        return;
+      }
+
+
+      setLoading(
+        true
+      );
+
+      setResult(
+        null
+      );
+
+      setProgression(
+        null
+      );
+
+
+      try {
+
+        const reader =
+          new FileReader();
+
+
+        reader.onload =
+          async () => {
+
+            try {
+
+              const response =
+                await fetch(
+                  `${API}/api/analyze`,
+                  {
+                    method:
+                      "POST",
+
+                    headers: {
+                      "Content-Type":
+                        "application/json",
+                    },
+
+                    body:
+                      JSON.stringify({
+
+                        image:
+                          reader.result,
+
+                        patientId:
+                          patientId.trim(),
+                      }),
+                  }
+                );
+
+
+              const data =
+                await response.json();
+
+
+              if (
+                !response.ok
+              ) {
+
+                throw new Error(
+                  data.error ||
+                  "Analysis failed."
+                );
+              }
+
+
+              setResult(
+                data
+              );
+
+
+              // -----------------------------------------------
+              // Refresh patient / passport
+              // -----------------------------------------------
+
+              await loadPatientData(
+                patientId.trim()
+              );
+
+
+              await loadProgression(
+                patientId.trim()
+              );
+
+
+              await fetchTriageQueue();
+
+
+              window.scrollTo({
+                top: 0,
+                behavior: "smooth",
+              });
+
+            } catch (err) {
+
+              console.error(
+                err
+              );
+
+              setError(
+                err.message
+              );
+
+            } finally {
+
+              setLoading(
+                false
+              );
+            }
+          };
+
+
+        reader.onerror =
+          () => {
+
+            setError(
+              "Could not read the image."
+            );
+
+            setLoading(
+              false
+            );
+          };
+
+
+        reader.readAsDataURL(
+          image
+        );
+
+      } catch (err) {
+
+        console.error(
+          err
+        );
+
+        setError(
+          err.message
+        );
+
+        setLoading(
+          false
+        );
+      }
+    };
+
+
+  // ==========================================================
+  // DERIVED DATA
+  // ==========================================================
+
+  const currentGrade =
+    getCurrentGrade(
+      progression,
+      result
+    );
+
+
+  const currentSeverityClass =
+    getSeverityClass(
+      currentGrade
+    );
+
+
+  const reportPatientName =
+    passportPatient?.name ||
+    patientName ||
+    "Patient";
+
+
+  const reportPatientId =
+    passportPatient?.patientId ||
+    patientId ||
+    "N/A";
+
+
+  const reportAge =
+    passportPatient?.age ??
+    age ??
+    "N/A";
+
+
+  const reportGender =
+    passportPatient?.gender ||
+    gender ||
+    "N/A";
+
+
+  const reportVillage =
+    passportPatient?.village ||
+    village ||
+    "N/A";
+
+
+  const reportDistrict =
+    passportPatient?.district ||
+    district ||
+    "N/A";
+
+
+  const currentLabel =
+    progression?.available
+      ? progression.current?.drLabel
+      : getGradeLabel(
+          currentGrade,
+          language
+        );
+
+
+  const reportPriority =
+    progression?.available
+      ? progression.progression?.priority
+      : String(
+          result?.referral?.urgency ||
+          "ROUTINE"
+        ).toUpperCase();
+
+
+  const passportHistory =
+    [...screenings].sort(
+      (a, b) =>
+        new Date(
+          b.screenedAt
+        ) -
+        new Date(
+          a.screenedAt
+        )
+    );
+
+
+  const passportCount =
+    passportHistory.length;
+
+
+  const passportLatest =
+    passportHistory[0] ||
+    null;
+
+
+  const lesionEntries =
+    getLesionEntries(
+      result?.lesionCounts ||
+      result?.lesionFindings
+    );
+
+
+  const evidence =
+    result?.evidence ||
+    null;
+
+
+  const vesselPercentage =
+    numberOrNull(
+      result?.vesselPercentage
+    );
+
+
+  const qualityScore =
+    numberOrNull(
+      result?.qualityScore ??
+      result?.imageQuality?.qualityScore
+    );
+
+
+  const riskScore =
+    getRiskScore(
+      result
+    );
+
+
+  const overlayUrl =
+    result?.overlayUrl ||
+    getImageUrl(
+      result?.overlayPath ||
+      result?.structuralOverlay
+    );
+
+
+  const originalResultImage =
+    result?.imageUrl ||
+    getImageUrl(
+      result?.imageName
+    );
+
+
+  // ==========================================================
+  // RENDER
+  // ==========================================================
+
+  return (
+
+    <div className="app hospital-app">
+
+
+      {/* ======================================================
+          NAVBAR
+          ====================================================== */}
+
+      <header className="navbar hospital-navbar">
 
         <div className="brand">
 
-          <div className="brand-icon">
+          <div className="brand-mark">
             E
           </div>
 
           <div>
-            <h1>Eyeabetics</h1>
 
-            <span>
-              {t.footer}
-            </span>
+            <div className="brand-title">
+              {t("appTitle")}
+            </div>
+
+            <div className="brand-subtitle">
+              {t("appSubtitle")}
+            </div>
+
           </div>
 
         </div>
 
 
-        <div className="nav-right">
+        <div className="navbar-actions">
 
-          <div className="language-selector">
+          <select
+            className="language-select"
+            value={language}
+            onChange={(e) =>
+              setLanguage(
+                e.target.value
+              )
+            }
+          >
 
-            <label htmlFor="language">
-              {t.language}
-            </label>
+            {Object.keys(
+              translations
+            ).map(
+              (lang) => (
 
-            <select
-              id="language"
-              value={language}
-              onChange={(e) =>
-                setLanguage(e.target.value)
-              }
-            >
+                <option
+                  key={lang}
+                  value={lang}
+                >
+                  {lang}
+                </option>
 
-              {Object.keys(translations).map(
-                (lang) => (
-                  <option
-                    key={lang}
-                    value={lang}
-                  >
-                    {lang}
-                  </option>
-                )
-              )}
+              )
+            )}
 
-            </select>
+          </select>
 
-          </div>
-
-
-          <div className="status">
-
+          <div className="status-pill">
             <span className="status-dot"></span>
-
-            {t.engineReady}
-
+            AI Screening Prototype
           </div>
 
         </div>
@@ -1253,145 +2395,367 @@ function App() {
       </header>
 
 
-      <main>
-
-        <section className="hero">
-
-          <div>
-
-            <p className="eyebrow">
-              {t.retinalIntelligence}
-            </p>
-
-            <h2>
-
-              {t.heroTitle1}
-
-              <br />
-
-              <span>
-                {t.heroTitle2}
-              </span>
-
-            </h2>
+      <main className="main-content">
 
 
-            <p className="hero-text">
-              {t.heroText}
-            </p>
+        {/* ====================================================
+            PATIENT INFORMATION
+            ==================================================== */}
 
-          </div>
-
-
-          <div className="hero-card">
-
-            <div className="scan-line"></div>
-
-            <div className="eye-symbol">
-              ◉
-            </div>
-
-            <p>
-              {t.aiScreening}
-            </p>
-
-            <span>
-              MATLAB • U-NET • IDRiD
-            </span>
-
-          </div>
-
-        </section>
-
-
-        <section className="analysis-card">
+        <section className="card patient-card">
 
           <div className="section-heading">
 
             <div>
 
-              <p className="eyebrow">
-                {t.analysisWorkspace}
-              </p>
+              <span className="section-eyebrow">
+                PATIENT
+              </span>
 
-              <h3>
-                {t.fundusAnalysis}
-              </h3>
+              <h2>
+                {t("patientInformation")}
+              </h2>
 
             </div>
 
-            <span className="pipeline">
-              {t.livePipeline}
-            </span>
+            {passportPatient && (
+
+              <div className="patient-id-badge">
+
+                {passportPatient.patientId}
+
+              </div>
+
+            )}
 
           </div>
 
 
-          <div className="upload-area">
+          <div className="form-grid">
 
-            {!preview ? (
+            <label>
 
-              <label className="upload-box">
+              <span>
+                {t("patientId")}
+              </span>
 
-                <div className="upload-icon">
-                  ↑
-                </div>
+              <input
+                value={patientId}
+                onChange={(e) =>
+                  setPatientId(
+                    e.target.value
+                  )
+                }
+                placeholder="e.g. PAT-001"
+              />
 
-                <h4>
-                  {t.uploadTitle}
-                </h4>
+            </label>
 
-                <p>
-                  {t.uploadText}
-                </p>
 
-                <span className="browse">
-                  {t.chooseImage}
-                </span>
+            <label>
 
-                <input
-                  type="file"
-                  accept="image/png,image/jpeg"
-                  onChange={handleImage}
-                  hidden
-                />
+              <span>
+                {t("patientName")}
+              </span>
 
-              </label>
+              <input
+                value={patientName}
+                onChange={(e) =>
+                  setPatientName(
+                    e.target.value
+                  )
+                }
+                placeholder="Patient name"
+              />
 
-            ) : (
+            </label>
 
-              <div className="preview-container">
+
+            <label>
+
+              <span>
+                {t("age")}
+              </span>
+
+              <input
+                type="number"
+                value={age}
+                onChange={(e) =>
+                  setAge(
+                    e.target.value
+                  )
+                }
+                placeholder="Age"
+              />
+
+            </label>
+
+
+            <label>
+
+              <span>
+                {t("gender")}
+              </span>
+
+              <input
+                value={gender}
+                onChange={(e) =>
+                  setGender(
+                    e.target.value
+                  )
+                }
+                placeholder="Gender"
+              />
+
+            </label>
+
+
+            <label>
+
+              <span>
+                {t("phone")}
+              </span>
+
+              <input
+                value={phone}
+                onChange={(e) =>
+                  setPhone(
+                    e.target.value
+                  )
+                }
+                placeholder="Phone"
+              />
+
+            </label>
+
+
+            <label>
+
+              <span>
+                {t("village")}
+              </span>
+
+              <input
+                value={village}
+                onChange={(e) =>
+                  setVillage(
+                    e.target.value
+                  )
+                }
+                placeholder="Village"
+              />
+
+            </label>
+
+
+            <label>
+
+              <span>
+                {t("district")}
+              </span>
+
+              <input
+                value={district}
+                onChange={(e) =>
+                  setDistrict(
+                    e.target.value
+                  )
+                }
+                placeholder="District"
+              />
+
+            </label>
+
+          </div>
+
+
+          <div className="patient-actions">
+
+            <button
+              className="secondary-button"
+              onClick={
+                createPatient
+              }
+            >
+              {t("createPatient")}
+            </button>
+
+            {patientMessage && (
+
+              <span className="success-message">
+                {patientMessage}
+              </span>
+
+            )}
+
+          </div>
+
+        </section>
+
+
+        {/* ====================================================
+            UPLOAD
+            ==================================================== */}
+
+        <section className="card upload-card">
+
+          <div className="section-heading">
+
+            <div>
+
+              <span className="section-eyebrow">
+                SCREENING
+              </span>
+
+              <h2>
+                {t("uploadTitle")}
+              </h2>
+
+              <p>
+                {t("uploadDescription")}
+              </p>
+
+            </div>
+
+          </div>
+
+
+          <div className="upload-layout">
+
+            <label className="upload-box">
+
+              <input
+                type="file"
+                accept="image/*"
+                onChange={
+                  handleImage
+                }
+              />
+
+              <div className="upload-icon">
+                ↑
+              </div>
+
+              <strong>
+                {t("chooseImage")}
+              </strong>
+
+              <span>
+                JPG / JPEG / PNG
+              </span>
+
+            </label>
+
+
+            <div className="preview-box">
+
+              {preview ? (
 
                 <img
-                  src={preview}
+                  src={
+                    preview
+                  }
                   alt="Fundus preview"
                 />
 
-                <div className="preview-info">
+              ) : (
 
-                  <p className="eyebrow">
-                    {t.imageReady}
-                  </p>
+                <div className="empty-preview">
+                  {t("selectedImage")}
+                </div>
 
-                  <h4>
-                    {image?.name}
-                  </h4>
+              )}
 
-                  <p>
-                    {t.readyText}
-                  </p>
+            </div>
 
-                  <button
-                    onClick={analyzeImage}
-                    disabled={loading}
-                  >
+          </div>
 
-                    {loading
-                      ? t.analyzing
-                      : t.analyze}
 
-                  </button>
+          {error && (
 
+            <div className="error-banner">
+              {error}
+            </div>
+
+          )}
+
+
+          <button
+            className="primary-button analyze-button"
+            onClick={
+              analyzeImage
+            }
+            disabled={
+              loading ||
+              !image ||
+              !patientId.trim()
+            }
+          >
+
+            {loading
+              ? t("analyzing")
+              : t("analyzeImage")}
+
+          </button>
+
+        </section>
+
+
+        {/* ====================================================
+            TRIAGE QUEUE
+            ==================================================== */}
+
+        <section className="card triage-card">
+
+          <div className="section-heading">
+
+            <div>
+
+              <span className="section-eyebrow">
+                CLINICAL WORKFLOW
+              </span>
+
+              <h2>
+                {t("triageQueue")}
+              </h2>
+
+              <p>
+                {t("triageDescription")}
+              </p>
+
+            </div>
+
+
+            {triage?.summary && (
+
+              <div className="triage-summary">
+
+                <div>
+                  <strong>
+                    {triage.summary.total}
+                  </strong>
+                  <span>Total</span>
+                </div>
+
+                <div className="critical">
+                  <strong>
+                    {triage.summary.critical}
+                  </strong>
+                  <span>Critical</span>
+                </div>
+
+                <div className="high">
+                  <strong>
+                    {triage.summary.high}
+                  </strong>
+                  <span>High</span>
+                </div>
+
+                <div className="moderate">
+                  <strong>
+                    {triage.summary.moderate}
+                  </strong>
+                  <span>Moderate</span>
                 </div>
 
               </div>
@@ -1401,30 +2765,122 @@ function App() {
           </div>
 
 
-          {error && (
-            <div className="error">
-              {error}
+          {triageLoading && (
+
+            <div className="loading-inline">
+              Loading review queue...
             </div>
+
           )}
 
 
-          {loading && (
+          {triageError && (
 
-            <div className="loading">
+            <div className="error-banner">
+              {triageError}
+            </div>
 
-              <div className="loader"></div>
+          )}
 
-              <div>
 
-                <strong>
-                  {t.analyzing}
-                </strong>
+          {!triageLoading &&
+            !triageError &&
+            (!triage?.queue ||
+              triage.queue.length === 0) && (
 
-                <p>
-                  {t.loadingDetails}
-                </p>
-
+              <div className="empty-state">
+                {t("noTriageCases")}
               </div>
+
+            )}
+
+
+          {triage?.queue?.length > 0 && (
+
+            <div className="triage-list">
+
+              {triage.queue
+                .slice(0, 12)
+                .map(
+                  (caseItem) => {
+
+                    const priority =
+                      String(
+                        caseItem.triage?.priority ||
+                        "ROUTINE"
+                      ).toUpperCase();
+
+                    const selected =
+                      selectedTriageCase?.screeningId ===
+                      caseItem.screeningId;
+
+
+                    return (
+
+                      <div
+                        className={`triage-row ${
+                          selected
+                            ? "selected"
+                            : ""
+                        }`}
+                        key={
+                          String(
+                            caseItem.screeningId
+                          )
+                        }
+                      >
+
+                        <div className="triage-main">
+
+                          <div className="triage-patient">
+
+                            <strong>
+                              {caseItem.patientId}
+                            </strong>
+
+                            <span>
+                              Grade{" "}
+                              {caseItem.drGrade}
+                            </span>
+
+                          </div>
+
+
+                          <div className="triage-reason">
+
+                            <span
+                              className={`priority-badge ${priority.toLowerCase()}`}
+                            >
+                              {priority}
+                            </span>
+
+                            <span>
+                              {caseItem.triage?.action ||
+                                caseItem.referral?.message ||
+                                "Clinical review"}
+                            </span>
+
+                          </div>
+
+                        </div>
+
+
+                        <button
+                          className="small-button"
+                          onClick={() =>
+                            handleTriageCase(
+                              caseItem
+                            )
+                          }
+                        >
+                          {t("viewCase")} →
+                        </button>
+
+                      </div>
+
+                    );
+                  }
+                )}
 
             </div>
 
@@ -1433,366 +2889,1605 @@ function App() {
         </section>
 
 
+        {/* ====================================================
+            CLINICAL SUMMARY
+            ==================================================== */}
+
         {result && (
 
-          <section className="results">
+          <section className="card clinical-summary">
 
             <div className="section-heading">
 
               <div>
 
-                <p className="eyebrow">
-                  {t.analysisComplete}
-                </p>
-
-                <h3>
-                  {t.retinalResults}
-                </h3>
-
-              </div>
-
-              <span className="complete">
-                {t.complete}
-              </span>
-
-            </div>
-
-
-            {!result.isGradeable && (
-
-              <div className="quality-warning">
-
-                <strong>
-                  {t.quality}
-                </strong>
-
-                <p>
-                  {result.qualityMessage ||
-                    t.qualityWarning}
-                </p>
-
-              </div>
-
-            )}
-
-
-            <div className="main-result">
-
-              <div className="dr-result-card">
-
-                <span>
-                  {t.drGrade}
+                <span className="section-eyebrow">
+                  SCREENING RESULT
                 </span>
 
-                <strong>
-                  {getGradeLabel(
-                    result.grade ??
-                    result.drGrade
+                <h2>
+                  {t("clinicalSummary")}
+                </h2>
+
+              </div>
+
+              <div
+                className={`severity-badge ${currentSeverityClass}`}
+              >
+                {currentLabel ||
+                  getGradeLabel(
+                    currentGrade,
+                    language
                   )}
-                </strong>
-
-                <small>
-
-                  {t.confidence}:{' '}
-
-                  {confidence !== null
-                    ? `${(
-                        confidence * 100
-                      ).toFixed(2)}%`
-                    : 'N/A'}
-
-                </small>
-
               </div>
 
+            </div>
 
-              <div className="risk-result-card">
+
+            <div className="metric-grid">
+
+
+              <div className="metric-card grade-metric">
 
                 <span>
-                  {t.riskScore}
+                  {t("drGrade")}
                 </span>
 
                 <strong>
-                  {riskScore !== null
-                    ? riskScore.toFixed(2)
-                    : 'N/A'}
+                  {currentGrade ??
+                    "N/A"}
                 </strong>
 
                 <small>
-
-                  {confidence !== null &&
-                  confidence < 0.6
-                    ? t.lowConfidence
-                    : (
-                        getUrgencyLabel(
-                          result?.referral?.urgency
-                        ) || 'N/A'
-                      )}
-
+                  {currentLabel ||
+                    getGradeLabel(
+                      currentGrade,
+                      language
+                    )}
                 </small>
 
               </div>
 
-            </div>
 
-
-            <div className="result-grid">
-
-              <div className="result-image">
-
-                <div className="result-label">
-                  {t.original}
-                </div>
-
-                <img
-                  src={preview}
-                  alt="Original fundus"
-                />
-
-              </div>
-
-
-              <div className="result-image">
-
-                <div className="result-label">
-                  {t.structural}
-                </div>
-
-                {result.overlay ? (
-
-                  <img
-                    src={`data:image/png;base64,${result.overlay}`}
-                    alt="Structural retinal analysis"
-                  />
-
-                ) : (
-
-                  <div className="no-image">
-                    {t.noVisualization}
-                  </div>
-
-                )}
-
-              </div>
-
-            </div>
-
-
-            <div className="metrics">
-
-              <div>
+              <div className="metric-card">
 
                 <span>
-                  {t.drGrade}
+                  {t("severity")}
                 </span>
 
                 <strong>
                   {getGradeLabel(
-                    result.grade ??
-                    result.drGrade
+                    currentGrade,
+                    language
                   )}
                 </strong>
 
               </div>
 
 
-              <div>
+              <div className="metric-card">
 
                 <span>
-                  {t.confidence}
+                  {t("imageQuality")}
                 </span>
 
                 <strong>
-                  {confidence !== null
-                    ? `${(
-                        confidence * 100
-                      ).toFixed(2)}%`
-                    : 'N/A'}
+
+                  {qualityScore !== null
+                    ? `${qualityScore.toFixed(
+                        0
+                      )}/100`
+                    : "N/A"}
+
                 </strong>
+
+                <small>
+
+                  {result.isGradeable ===
+                  false
+                    ? "Review image quality"
+                    : "Gradeability check passed"}
+
+                </small>
 
               </div>
 
 
-              <div>
+              <div className="metric-card">
 
                 <span>
-                  {t.vesselArea}
+                  {t("vesselArea")}
                 </span>
 
                 <strong>
-                  {typeof result.vesselPercentage ===
-                    'number'
-                    ? `${result.vesselPercentage.toFixed(
+
+                  {vesselPercentage !== null
+                    ? `${vesselPercentage.toFixed(
                         2
                       )}%`
-                    : 'N/A'}
+                    : "N/A"}
+
                 </strong>
+
+                <small>
+                  Analyzed vessel pixels
+                </small>
 
               </div>
 
 
-              <div>
+              <div className="metric-card">
 
                 <span>
-                  {t.quality}
+                  {t("riskScore")}
                 </span>
 
                 <strong>
-                  {typeof result.qualityScore ===
-                    'number'
-                    ? result.qualityScore.toFixed(0)
-                    : 'N/A'}
-                </strong>
 
-              </div>
-
-            </div>
-
-
-            <div className="detail-grid">
-
-              <div className="detail-card">
-
-                <p className="eyebrow">
-                  {t.lesionFindings}
-                </p>
-
-
-                {getLesionEntries().length > 0 ? (
-
-                  <div className="lesion-list">
-
-                    {getLesionEntries().map(
-                      ([name, pixels]) => (
-
-                        <div
-                          className="lesion-item"
-                          key={name}
-                        >
-
-                          <span>
-                            {getLesionName(name)}
-                          </span>
-
-                          <strong>
-                            {Number(
-                              pixels
-                            ).toLocaleString()}{' '}
-                            {t.pixels}
-                          </strong>
-
-                        </div>
-
-                      )
-                    )}
-
-                  </div>
-
-                ) : (
-
-                  <p>
-                    {t.noLesions}
-                  </p>
-
-                )}
-
-              </div>
-
-
-              <div className="detail-card recommendation-card">
-
-                <p className="eyebrow">
-                  {t.recommendation}
-                </p>
-
-                <h4>
-                  {getReferralText()}
-                </h4>
-
-
-                {result.referral?.nearestCenter && (
-
-                  <p>
-                    {result.referral.nearestCenter}
-                  </p>
-
-                )}
-
-              </div>
-
-            </div>
-
-
-            <div className="technical-strip">
-
-              <div>
-
-                <span>
-                  {t.model}
-                </span>
-
-                <strong>
-                  {t.lesionModel}
-                </strong>
-
-              </div>
-
-
-              <div>
-
-                <span>
-                  {t.status}
-                </span>
-
-                <strong>
-                  {t.analysisDone}
-                </strong>
-
-              </div>
-
-
-              <div>
-
-                <span>
-                  {t.riskScore}
-                </span>
-
-                <strong>
                   {riskScore !== null
-                    ? riskScore.toFixed(2)
-                    : 'N/A'}
+                    ? riskScore.toFixed(
+                        2
+                      )
+                    : "N/A"}
+
                 </strong>
+
+              </div>
+
+
+              <div
+                className={`metric-card referral-metric ${currentSeverityClass}`}
+              >
+
+                <span>
+                  {t("referral")}
+                </span>
+
+                <strong>
+                  {getUrgencyLabel(
+                    reportPriority,
+                    language
+                  )}
+                </strong>
+
+                <small>
+                  {getReferralText(
+                    currentGrade,
+                    language
+                  )}
+                </small>
 
               </div>
 
             </div>
 
 
-            <div className="disclaimer">
-              {t.disclaimer}
+            <div
+              className={`clinical-alert ${currentSeverityClass}`}
+            >
+
+              <strong>
+                {currentGrade >= 3
+                  ? t("urgent")
+                  : currentGrade === 2
+                    ? t("review")
+                    : t("routine")}
+              </strong>
+
+              <span>
+                {getReferralText(
+                  currentGrade,
+                  language
+                )}
+              </span>
+
             </div>
 
           </section>
 
         )}
 
+
+        {/* ====================================================
+            RETINA PASSPORT
+            ==================================================== */}
+
+        {(passportPatient ||
+          patientId) && (
+
+          <section className="card passport-card">
+
+            <div className="section-heading">
+
+              <div>
+
+                <span className="section-eyebrow">
+                  LONGITUDINAL RECORD
+                </span>
+
+                <h2>
+                  {t("patientPassport")}
+                </h2>
+
+              </div>
+
+              <div className="passport-count">
+
+                <strong>
+                  {passportCount}
+                </strong>
+
+                <span>
+                  {t("screenings")}
+                </span>
+
+              </div>
+
+            </div>
+
+
+            <div className="passport-header">
+
+              <div className="passport-avatar">
+                {reportPatientName
+                  .charAt(0)
+                  .toUpperCase()}
+              </div>
+
+
+              <div className="passport-identity">
+
+                <h3>
+                  {reportPatientName}
+                </h3>
+
+                <span>
+                  {reportPatientId}
+                </span>
+
+              </div>
+
+
+              <div className="passport-details">
+
+                <div>
+                  <span>
+                    {t("age")}
+                  </span>
+                  <strong>
+                    {reportAge}
+                  </strong>
+                </div>
+
+                <div>
+                  <span>
+                    {t("gender")}
+                  </span>
+                  <strong>
+                    {reportGender}
+                  </strong>
+                </div>
+
+                <div>
+                  <span>
+                    {t("village")}
+                  </span>
+                  <strong>
+                    {reportVillage}
+                  </strong>
+                </div>
+
+                <div>
+                  <span>
+                    {t("district")}
+                  </span>
+                  <strong>
+                    {reportDistrict}
+                  </strong>
+                </div>
+
+              </div>
+
+                     </div>
+
+
+          {/* DEMO ABHA CARD */}
+
+          <div className="demo-abha-section">
+
+            <div className="demo-abha-header">
+
+              <div>
+                <span className="summary-label">
+                  DIGITAL HEALTH ID
+                </span>
+
+                <strong>
+                  ABHA / ABDM Demo Link
+                </strong>
+
+                <p>
+                  Demonstration-only digital health identity
+                  for the Eyeabetics prototype.
+                </p>
+              </div>
+
+              <button
+                type="button"
+                className="demo-abha-button"
+                onClick={() =>
+                  setShowDemoAbha((value) => !value)
+                }
+              >
+                {showDemoAbha
+                  ? "Hide Demo Card"
+                  : "Generate Demo ABHA Card"}
+              </button>
+
+            </div>
+
+
+            {showDemoAbha && (
+
+              <div className="demo-abha-card">
+
+                <div className="demo-abha-card-top">
+
+                  <div className="demo-abha-logo">
+                    ABHA
+                  </div>
+
+                  <div className="demo-abha-title">
+                    <span>
+                      AYUSHMAN BHARAT DIGITAL MISSION
+                    </span>
+
+                    <strong>
+                      DIGITAL HEALTH ID
+                    </strong>
+                  </div>
+
+                  <div className="demo-abha-badge">
+                    DEMO ONLY
+                  </div>
+
+                </div>
+
+
+                <div className="demo-abha-identity">
+
+                  <div>
+                    <span>NAME</span>
+                    <strong>
+                      {reportPatientName}
+                    </strong>
+                  </div>
+
+                  <div>
+                    <span>DEMO ABHA ID</span>
+                   <strong>
+  DEMO • 12 34 56 78 90 12 34
+</strong>
+                  </div>
+
+                </div>
+
+
+                <div className="demo-abha-details">
+
+                  <div>
+                    <span>AGE</span>
+                    <strong>{reportAge}</strong>
+                  </div>
+
+                  <div>
+                    <span>GENDER</span>
+                    <strong>{reportGender}</strong>
+                  </div>
+
+                  <div>
+                    <span>LOCATION</span>
+                    <strong>
+                      {reportVillage}, {reportDistrict}
+                    </strong>
+                  </div>
+
+                </div>
+
+
+                <div className="demo-abha-footer">
+
+                  <span>
+                    Eyeabetics • Retina Passport
+                  </span>
+
+                  <strong>
+                    NOT A REAL ABHA ID
+                  </strong>
+
+                </div>
+
+              </div>
+
+            )}
+
+          </div>
+
+
+          {passportLatest && (
+
+              <div className="latest-screening">
+
+                <div>
+
+                  <span>
+                    {t("currentScreening")}
+                  </span>
+
+                  <strong>
+                    Grade{" "}
+                    {passportLatest.drGrade}
+                  </strong>
+
+                </div>
+
+                <div>
+
+                  <span>
+                    {t("severity")}
+                  </span>
+
+                  <strong>
+                    {passportLatest.drLabel ||
+                      getGradeLabel(
+                        passportLatest.drGrade,
+                        language
+                      )}
+                  </strong>
+
+                </div>
+
+                <div>
+
+                  <span>
+                    {t("referral")}
+                  </span>
+
+                  <strong>
+                    {getUrgencyLabel(
+                      passportLatest.referral?.urgency ||
+                        "ROUTINE",
+                      language
+                    )}
+                  </strong>
+
+                </div>
+
+                <div>
+
+                  <span>
+                    Date
+                  </span>
+
+                  <strong>
+                    {formatReportDate(
+                      passportLatest.screenedAt
+                    )}
+                  </strong>
+
+                </div>
+
+              </div>
+
+            )}
+                         
+
+
+          {/* ====================================================
+              OFFLINE WHATSAPP STORE & FORWARD
+              ==================================================== */}
+
+          <div className="offline-referral-panel">
+
+            <div className="offline-referral-info">
+
+              <span className="offline-status-dot"></span>
+
+              <div>
+                <strong>
+                  Offline Referral
+                </strong>
+
+                <p>
+                  Queue this referral for WhatsApp sync
+                  when connectivity is restored.
+                </p>
+              </div>
+
+            </div>
+
+            <button
+              type="button"
+              className="offline-referral-button"
+              onClick={() => {
+
+                const referral =
+                  createOfflineReferral(
+                    result,
+                    reportPatientName,
+                    reportPatientId
+                  )
+
+                setOfflineReferral(referral)
+
+              }}
+              disabled={!result}
+            >
+              Queue WhatsApp Referral
+            </button>
+
+          </div>
+
+
+          {offlineReferral && (
+
+            <div className="offline-referral-queued">
+
+              <div className="queued-header">
+
+                <div>
+
+                  <span className="section-eyebrow">
+                    STORE & FORWARD
+                  </span>
+
+                  <h3>
+                    WhatsApp Referral Queued
+                  </h3>
+
+                </div>
+
+                <span className="queued-badge">
+                  {offlineReferral.status}
+                </span>
+
+              </div>
+
+              <div className="queued-details">
+
+                <div>
+                  <span>Patient</span>
+                  <strong>
+                    {offlineReferral.patientName}
+                  </strong>
+                </div>
+
+                <div>
+                  <span>Priority</span>
+                  <strong>
+                    {offlineReferral.urgency}
+                  </strong>
+                </div>
+
+                <div>
+                  <span>Referral ID</span>
+                  <strong>
+                    {offlineReferral.id}
+                  </strong>
+                </div>
+
+              </div>
+
+              <pre className="whatsapp-preview">
+                {offlineReferral.message}
+              </pre>
+
+              <div className="offline-sync-note">
+                ✓ Stored locally • Ready for sync when connectivity returns
+              </div>
+
+            </div>
+
+          )}
+
+
+          <div className="history-title">
+            {t("screeningHistory")}
+          </div>
+
+
+            {passportHistory.length ===
+            0 ? (
+
+              <div className="empty-state">
+                {t("noHistory")}
+              </div>
+
+            ) : (
+
+              <div className="history-table">
+
+                {passportHistory
+                  .map(
+                    (
+                      screening,
+                      index
+                    ) => (
+
+                      <div
+                        className="history-row"
+                        key={
+                          String(
+                            screening._id ||
+                            screening.screeningId ||
+                            index
+                          )
+                        }
+                      >
+
+                        <div>
+
+                          <span>
+                            {formatReportDate(
+                              screening.screenedAt
+                            )}
+                          </span>
+
+                        </div>
+
+
+                        <div>
+
+                          <span>
+                            {t("drGrade")}
+                          </span>
+
+                          <strong>
+                            Grade{" "}
+                            {screening.drGrade}
+                          </strong>
+
+                        </div>
+
+
+                        <div>
+
+                          <span>
+                            {t("severity")}
+                          </span>
+
+                          <strong>
+                            {screening.drLabel ||
+                              getGradeLabel(
+                                screening.drGrade,
+                                language
+                              )}
+                          </strong>
+
+                        </div>
+
+
+                        <div>
+
+                          <span>
+                            {t("riskScore")}
+                          </span>
+
+                          <strong>
+                            {numberOrNull(
+                              screening.riskScore
+                            ) !== null
+                              ? Number(
+                                  screening.riskScore
+                                ).toFixed(2)
+                              : "N/A"}
+                          </strong>
+
+                        </div>
+
+
+                        <div>
+
+                          <span>
+                            {t("referral")}
+                          </span>
+
+                          <strong>
+                            {String(
+                              screening.referral?.urgency ||
+                              "ROUTINE"
+                            ).toUpperCase()}
+                          </strong>
+
+                        </div>
+
+                      </div>
+
+                    )
+                  )}
+
+              </div>
+
+            )}
+
+          </section>
+
+        )}
+
+
+        {/* ====================================================
+            VISUAL EVIDENCE
+            ==================================================== */}
+
+        {result && (
+
+          <section className="card evidence-card">
+
+            <div className="section-heading">
+
+              <div>
+
+                <span className="section-eyebrow">
+                  MULTIMODAL EVIDENCE
+                </span>
+
+                <h2>
+                  {t("visualEvidence")}
+                </h2>
+
+              </div>
+
+            </div>
+
+
+            <div className="image-evidence-grid">
+
+
+              <div className="evidence-image-card">
+
+                <div className="evidence-image-header">
+
+                  <strong>
+                    {t("originalFundus")}
+                  </strong>
+
+                </div>
+
+
+                <div className="evidence-image">
+
+                  {preview ? (
+
+                    <img
+                      src={
+                        preview
+                      }
+                      alt="Original retinal fundus"
+                    />
+
+                  ) : originalResultImage ? (
+
+                    <img
+                      src={
+                        originalResultImage
+                      }
+                      alt="Original retinal fundus"
+                    />
+
+                  ) : (
+
+                    <div className="empty-preview">
+                      No image available
+                    </div>
+
+                  )}
+
+                </div>
+
+              </div>
+
+
+              <div className="evidence-image-card">
+
+                <div className="evidence-image-header">
+
+                  <strong>
+                    {t("structuralOverlay")}
+                  </strong>
+
+                  <span>
+                    Lesions + vessels
+                  </span>
+
+                </div>
+
+
+                <div className="evidence-image">
+
+                  {overlayUrl ? (
+
+                    <img
+                      src={
+                        overlayUrl
+                      }
+                      alt="Structural retinal analysis overlay"
+                    />
+
+                  ) : (
+
+                    <div className="empty-preview">
+                      Structural overlay unavailable
+                    </div>
+
+                  )}
+
+                </div>
+
+              </div>
+
+            </div>
+
+          </section>
+
+        )}
+
+
+        {/* ====================================================
+            AI EVIDENCE SUMMARY
+            ==================================================== */}
+
+        {result && (
+
+          <section className="card ai-evidence-card">
+
+            <div className="section-heading">
+
+              <div>
+
+                <span className="section-eyebrow">
+                  EVIDENCE LAYER
+                </span>
+
+                <h2>
+                  {t("aiEvidence")}
+                </h2>
+
+              </div>
+
+            </div>
+
+
+            <div className="evidence-disclaimer">
+
+              {evidence?.disclaimer ||
+                t("evidenceDisclaimer")}
+
+            </div>
+
+
+            {evidence?.escalation && (
+
+              <div
+                className={`evidence-escalation ${currentSeverityClass}`}
+              >
+
+                {evidence.escalation}
+
+              </div>
+
+            )}
+
+
+            <div className="evidence-findings">
+
+              {(evidence?.findings ||
+                []).map(
+                  (
+                    finding,
+                    index
+                  ) => (
+
+                    <div
+                      className={`finding-card finding-${finding.type}`}
+                      key={
+                        `${finding.type}-${index}`
+                      }
+                    >
+
+                      <div className="finding-icon">
+
+                        {finding.type ===
+                        "classification"
+                          ? "◉"
+                          : finding.type ===
+                              "lesion"
+                            ? "✦"
+                            : finding.type ===
+                                "vascular"
+                              ? "⌁"
+                              : finding.type ===
+                                  "quality"
+                                ? "✓"
+                                : "!"}
+
+                      </div>
+
+
+                      <div className="finding-content">
+
+                        <span>
+                          {finding.title}
+                        </span>
+
+                        <strong>
+                          {finding.value}
+                        </strong>
+
+                        <p>
+                          {finding.detail}
+                        </p>
+
+
+                        {finding.classes?.length >
+                          0 && (
+
+                          <div className="lesion-class-list">
+
+                            {finding.classes.map(
+                              (
+                                lesion,
+                                lesionIndex
+                              ) => (
+
+                                <div
+                                  className="lesion-class-item"
+                                  key={
+                                    `${lesion.className}-${lesionIndex}`
+                                  }
+                                >
+
+                                  <span>
+                                    {getLesionName(
+                                      lesion.className
+                                    )}
+                                  </span>
+
+                                  <strong>
+                                    {Number(
+                                      lesion.pixels
+                                    ).toLocaleString()}
+                                  </strong>
+
+                                </div>
+
+                              )
+                            )}
+
+                          </div>
+
+                        )}
+
+                      </div>
+
+                    </div>
+
+                  )
+                )}
+
+            </div>
+
+
+            {lesionEntries.length > 0 && (
+
+              <div className="lesion-note">
+
+                <strong>
+                  Lesion output:
+                </strong>{" "}
+
+                The current prototype reports generic
+                segmentation classes. Their exact
+                semantic mapping should be verified
+                against the deployed model configuration
+                before assigning clinical lesion names.
+
+              </div>
+
+            )}
+
+          </section>
+
+        )}
+
+
+        {/* ====================================================
+            PROGRESSION
+            ==================================================== */}
+
+        {patientId && (
+
+          <section className="card progression-card">
+
+            <div className="section-heading">
+
+              <div>
+
+                <span className="section-eyebrow">
+                  LONGITUDINAL ANALYSIS
+                </span>
+
+                <h2>
+                  {t("progression")}
+                </h2>
+
+                <p>
+                  {t("progressionDescription")}
+                </p>
+
+              </div>
+
+              {progression?.available && (
+
+                <div
+                  className={`progression-badge ${getProgressionClass(
+                    progression
+                  )}`}
+                >
+                  {String(
+                    progression.progression?.priority ||
+                    "ROUTINE"
+                  ).toUpperCase()}
+                </div>
+
+              )}
+
+            </div>
+
+
+            {progressionLoading && (
+
+              <div className="loading-inline">
+                Loading progression...
+              </div>
+
+            )}
+
+
+            {!progressionLoading &&
+              !progression?.available && (
+
+                <div className="progression-empty">
+
+                  <strong>
+                    {currentGrade !== null
+                      ? `Current screening: Grade ${currentGrade}`
+                      : "Current screening available"}
+                  </strong>
+
+                  <span>
+                    A previous screening is required
+                    for longitudinal comparison.
+                  </span>
+
+                </div>
+
+              )}
+
+
+            {!progressionLoading &&
+              progression?.available && (
+
+                <>
+
+                  <div className="progression-grid">
+
+                    <div className="progression-box">
+
+                      <span>
+                        {t("previousGrade")}
+                      </span>
+
+                      <strong>
+                        Grade{" "}
+                        {
+                          progression.previous
+                            ?.drGrade
+                        }
+                      </strong>
+
+                      <small>
+                        {
+                          progression.previous
+                            ?.drLabel ||
+                          getGradeLabel(
+                            progression.previous
+                              ?.drGrade,
+                            language
+                          )
+                        }
+                      </small>
+
+                    </div>
+
+
+                    <div className="progression-arrow">
+                      →
+                    </div>
+
+
+                    <div className="progression-box current">
+
+                      <span>
+                        {t("currentGrade")}
+                      </span>
+
+                      <strong>
+                        Grade{" "}
+                        {
+                          progression.current
+                            ?.drGrade
+                        }
+                      </strong>
+
+                      <small>
+                        {
+                          progression.current
+                            ?.drLabel ||
+                          getGradeLabel(
+                            progression.current
+                              ?.drGrade,
+                            language
+                          )
+                        }
+                      </small>
+
+                    </div>
+
+
+                    <div className="progression-change">
+
+                      <span>
+                        {t("gradeChange")}
+                      </span>
+
+                      <strong>
+                        {progression.changes
+                          ?.drGrade >= 0
+                          ? "+"
+                          : ""}
+                        {
+                          progression.changes
+                            ?.drGrade ??
+                          0
+                        }
+                      </strong>
+
+                    </div>
+
+                  </div>
+
+
+                  <div
+                    className={`progression-status ${getProgressionClass(
+                      progression
+                    )}`}
+                  >
+
+                    <div>
+
+                      <span>
+                        {t("progressionStatus")}
+                      </span>
+
+                      <strong>
+                        {
+                          progression.progression
+                            ?.status ||
+                          "Stable"
+                        }
+                      </strong>
+
+                    </div>
+
+
+                    <div>
+
+                      <span>
+                        {t("progressionPriority")}
+                      </span>
+
+                      <strong>
+                        {
+                          progression.progression
+                            ?.priority ||
+                          "ROUTINE"
+                        }
+                      </strong>
+
+                    </div>
+
+                  </div>
+
+                </>
+
+              )}
+
+          </section>
+
+        )}
+
+
+        {/* ====================================================
+            FURTHER DETAILS
+            ==================================================== */}
+
+        {result && (
+
+          <section className="card collapsible-card">
+
+            <button
+              className="collapse-header"
+              onClick={() =>
+                setShowDetails(
+                  !showDetails
+                )
+              }
+            >
+
+              <span>
+                {t("furtherDetails")}
+              </span>
+
+              <span>
+                {showDetails
+                  ? "−"
+                  : "+"}
+              </span>
+
+            </button>
+
+
+            {showDetails && (
+
+              <div className="collapse-content">
+
+                <div className="detail-grid">
+
+                  <div>
+
+                    <span>
+                      DR Grade
+                    </span>
+
+                    <strong>
+                      {currentGrade}
+                    </strong>
+
+                  </div>
+
+
+                  <div>
+
+                    <span>
+                      DR Label
+                    </span>
+
+                    <strong>
+                      {result.drLabel ||
+                        currentLabel}
+                    </strong>
+
+                  </div>
+
+
+                  <div>
+
+                    <span>
+                      Quality Score
+                    </span>
+
+                    <strong>
+                      {qualityScore !== null
+                        ? `${qualityScore.toFixed(
+                            0
+                          )}/100`
+                        : "N/A"}
+                    </strong>
+
+                  </div>
+
+
+                  <div>
+
+                    <span>
+                      Gradeable
+                    </span>
+
+                    <strong>
+                      {result.isGradeable ===
+                      false
+                        ? "No"
+                        : "Yes"}
+                    </strong>
+
+                  </div>
+
+
+                  <div>
+
+                    <span>
+                      Vessel Area
+                    </span>
+
+                    <strong>
+                      {vesselPercentage !== null
+                        ? `${vesselPercentage.toFixed(
+                            2
+                          )}%`
+                        : "N/A"}
+                    </strong>
+
+                  </div>
+
+
+                  <div>
+
+                    <span>
+                      Risk
+                    </span>
+
+                    <strong>
+                      {riskScore !== null
+                        ? riskScore.toFixed(
+                            2
+                          )
+                        : "N/A"}
+                    </strong>
+
+                  </div>
+
+
+                  <div>
+
+                    <span>
+                      Referral Urgency
+                    </span>
+
+                    <strong>
+                      {
+                        result.referral
+                          ?.urgency ||
+                        "ROUTINE"
+                      }
+                    </strong>
+
+                  </div>
+
+
+                  <div>
+
+                    <span>
+                      Referral Timeframe
+                    </span>
+
+                    <strong>
+                      {
+                        result.referral
+                          ?.timeframe ||
+                        "N/A"
+                      }
+                    </strong>
+
+                  </div>
+
+                </div>
+
+              </div>
+
+            )}
+
+          </section>
+
+        )}
+
+
+        {/* ====================================================
+            TECHNICAL DETAILS
+            ==================================================== */}
+
+        {result && (
+
+          <section className="card collapsible-card">
+
+            <button
+              className="collapse-header"
+              onClick={() =>
+                setShowTechnical(
+                  !showTechnical
+                )
+              }
+            >
+
+              <span>
+                {t("technicalDetails")}
+              </span>
+
+              <span>
+                {showTechnical
+                  ? "−"
+                  : "+"}
+              </span>
+
+            </button>
+
+
+            {showTechnical && (
+
+              <div className="collapse-content">
+
+                <div className="technical-grid">
+
+                  <div>
+
+                    <span>
+                      DR Classifier
+                    </span>
+
+                    <strong>
+                      EfficientNet-B0
+                    </strong>
+
+                  </div>
+
+
+                  <div>
+
+                    <span>
+                      DR Classes
+                    </span>
+
+                    <strong>
+                      Grade 0–4
+                    </strong>
+
+                  </div>
+
+
+                  <div>
+
+                    <span>
+                      Lesion Model
+                    </span>
+
+                    <strong>
+                      U-Net
+                    </strong>
+
+                  </div>
+
+
+                  <div>
+
+                    <span>
+                      Vessel Model
+                    </span>
+
+                    <strong>
+                      U-Net
+                    </strong>
+
+                  </div>
+
+
+                  <div>
+
+                    <span>
+                      Inference Engine
+                    </span>
+
+                    <strong>
+                      MATLAB R2026a
+                    </strong>
+
+                  </div>
+
+
+                  <div>
+
+                    <span>
+                      Backend
+                    </span>
+
+                    <strong>
+                      Node.js
+                    </strong>
+
+                  </div>
+
+
+                  <div>
+
+                    <span>
+                      Database
+                    </span>
+
+                    <strong>
+                      MongoDB
+                    </strong>
+
+                  </div>
+
+
+                  <div>
+
+                    <span>
+                      Frontend
+                    </span>
+
+                    <strong>
+                      React + Vite
+                    </strong>
+
+                  </div>
+
+                </div>
+
+              </div>
+
+            )}
+
+          </section>
+
+        )}
+
+
+        {/* ====================================================
+            DISCLAIMER
+            ==================================================== */}
+
+        <section className="disclaimer-card">
+
+          <div className="disclaimer-icon">
+            !
+          </div>
+
+          <div>
+
+            <strong>
+              {t("disclaimerTitle")}
+            </strong>
+
+            <p>
+              {t("disclaimer")}
+            </p>
+
+          </div>
+
+        </section>
+
+
       </main>
 
 
-      <footer>
+      {/* ======================================================
+          FOOTER
+          ====================================================== */}
+
+      <footer className="footer">
 
         <span>
-          Eyeabetics
+          EYEABETICS • AI-Assisted Retinal Screening
         </span>
 
         <span>
-          {t.footer}
+          Research Prototype • Clinical Review Required
         </span>
 
       </footer>
 
     </div>
-  )
+  );
 }
 
-export default App
+
+export default App;
