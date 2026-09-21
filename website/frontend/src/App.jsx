@@ -1281,7 +1281,12 @@ function getImageUrl(
 
     return fileOrUrl;
   }
-
+  if (
+    String(fileOrUrl)
+      .startsWith("/api/")
+  ) {
+    return `${API}${fileOrUrl}`;
+  }
   const name =
     String(fileOrUrl)
       .split(/[\\/]/)
@@ -1807,10 +1812,10 @@ function App() {
               // ------------------------------------------------
 
               const imageUrl =
-                screening.imageUrl ||
-                getImageUrl(
-                  screening.imageName
-                );
+  getImageUrl(
+    screening.imageUrl ||
+    screening.imageName
+  );
 
               setPreview(
                 imageUrl
@@ -2306,11 +2311,11 @@ function App() {
 
 
   const overlayUrl =
+  getImageUrl(
     result?.overlayUrl ||
-    getImageUrl(
-      result?.overlayPath ||
-      result?.structuralOverlay
-    );
+    result?.overlayPath ||
+    result?.structuralOverlay
+  );
 
 
   const originalResultImage =
@@ -3045,9 +3050,12 @@ function App() {
 
                 <strong>
                   {getUrgencyLabel(
-                    reportPriority,
-                    language
-                  )}
+  currentGrade >= 3
+    ? "high"
+    : currentGrade === 2
+      ? "moderate"
+      : "low"
+)}
                 </strong>
 
                 <small>

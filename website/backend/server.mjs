@@ -491,24 +491,75 @@ const server =
               }
 
               const screenings =
-                await Screening.find({
-                  patientId,
-                })
-                .sort({
-                  screenedAt: -1,
-                });
+  await Screening.find({
+    patientId,
+  })
+  .sort({
+    screenedAt: -1,
+  });
 
-              return send(
-                res,
-                200,
-                {
-                  success: true,
+const enrichedScreenings =
+  screenings.map((screening) => {
 
-                  patient,
+    const imageFileName =
+      screening.imageName
+        ? path.basename(
+            screening.imageName
+          )
+        : null;
 
-                  screenings,
-                }
-              );
+    const overlayFileName =
+      screening.structuralOverlay
+        ? path.basename(
+            screening.structuralOverlay
+          )
+        : null;
+
+    const imageExists =
+      imageFileName &&
+      Boolean(
+        findUploadFile(
+          imageFileName
+        )
+      );
+
+    const overlayExists =
+      overlayFileName &&
+      Boolean(
+        findUploadFile(
+          overlayFileName
+        )
+      );
+
+    return {
+      ...screening.toObject(),
+
+      imageUrl:
+        imageExists
+          ? `/api/uploads/${encodeURIComponent(
+              imageFileName
+            )}`
+          : null,
+
+      overlayUrl:
+        overlayExists
+          ? `/api/uploads/${encodeURIComponent(
+              overlayFileName
+            )}`
+          : null,
+    };
+  });
+
+return send(
+  res,
+  200,
+  {
+    success: true,
+    patient,
+    screenings:
+      enrichedScreenings,
+  }
+);
             }
 
 
@@ -1492,7 +1543,7 @@ const server =
               true,
 
             timeout:
-              120000,
+              600000,
           },
 
           async (

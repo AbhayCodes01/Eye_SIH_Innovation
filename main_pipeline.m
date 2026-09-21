@@ -13,17 +13,24 @@ fprintf('============================================\n');
 % 1. PATHS AND INPUT
 % =============================================================
 
-cd('/MATLAB Drive');
+rootDir = fileparts(mfilename('fullpath'));
 
-addpath(genpath('/MATLAB Drive/models'));
+addpath(genpath(fullfile(rootDir,'models')));
 
-dataDir = '/MATLAB Drive/data/samples';
+dataDir = fullfile(rootDir,'data','samples');
 
 imageName = 'IDRiD_55.jpg';
 imagePath = fullfile(dataDir,imageName);
 
 fprintf('\nInput image: %s\n',imageName);
+% Initialize AI models
+addpath(fullfile(rootDir,'functions'));
 
+[drParams, lesionParams, vesselParams] = initialize_eyeabetics();
+
+% DR classifier requires shape-compatible normalization inputs
+norm1 = zeros(1,1,1,3,'single');
+norm2 = ones(1,1,1,3,'single');
 %% Load original fundus image
 
 Xoriginal = imread(imagePath);
@@ -97,32 +104,25 @@ fprintf('DR Confidence      : %.2f%%\n', ...
 
 %% ============================================================
 % 4. LESION SEGMENTATION
-% =============================================================
+% ============================================================
 
 fprintf('\n[2/3] LESION SEGMENTATION...\n');
 
-% Resize to lesion model input
-Xlesion = imresize(Xoriginal,[512 768]);
-
+% Current deployed lesion U-Net expects 512x512x3
+Xlesion = imresize(Xoriginal,[512 512]);
 Xlesion = single(Xlesion);
 
-% Model expects:
-% [batch, channels, height, width]
-Xlesion = reshape(Xlesion,[1 512 768 3]);
-
-Xlesion = permute(Xlesion,[1 4 2 3]);
+% Create image dlarray: Spatial x Spatial x Channel
+Xlesion = dlarray(Xlesion,'SSC');
 
 fprintf('Lesion input size: %s\n', ...
     mat2str(size(Xlesion)));
 
-% Run lesion U-Net
-Ylesion = idridLesionFcn( ...
-    Xlesion, ...
-    lesionParams, ...
-    'InputDataPermutation','none');
+% Run deployed lesion U-Net directly
+Ylesion = predict(lesionParams,Xlesion);
 
-% Remove batch dimension
-Ylesion = squeeze(Ylesion);
+% Convert dlarray to numeric array
+Ylesion = extractdata(Ylesion);
 
 fprintf('Lesion output size: %s\n', ...
     mat2str(size(Ylesion)));
@@ -139,7 +139,7 @@ YlesionProb = expY ./ sum(expY,3);
 [lesionConfidence,lesionMask] = ...
     max(YlesionProb,[],3);
 
-% Convert MATLAB 1,2,3 -> model classes 0,1,2
+% Convert MATLAB channel index to model class index
 lesionMask = lesionMask - 1;
 
 fprintf('Lesion probability range: %.4f -> %.4f\n', ...
@@ -151,25 +151,27 @@ disp(unique(lesionMask)');
 
 %% ============================================================
 % 5. VESSEL SEGMENTATION
-% =============================================================
+% ============================================================
 
 fprintf('\n[3/3] VESSEL SEGMENTATION...\n');
 
-% Resize to vessel model input
+% Current deployed vessel U-Net expects 256x256x3
 Xvessel = imresize(Xoriginal,[256 256]);
-
 Xvessel = single(Xvessel) / 255;
+
+% Create image dlarray: Spatial x Spatial x Channel
+Xvessel = dlarray(Xvessel,'SSC');
 
 fprintf('Vessel input size: %s\n', ...
     mat2str(size(Xvessel)));
 
-% Run vessel U-Net
-Yvessel = vesselFcn( ...
-    Xvessel, ...
-    vesselParams, ...
-    'InputDataPermutation',[4 1 2 3]);
+% Run deployed vessel U-Net directly
+Yvessel = predict(vesselParams,Xvessel);
 
-% Remove singleton dimension
+% Convert dlarray to numeric array
+Yvessel = extractdata(Yvessel);
+
+% Remove singleton dimensions
 vesselProb = squeeze(Yvessel);
 
 fprintf('Vessel output size: %s\n', ...
